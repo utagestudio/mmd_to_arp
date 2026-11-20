@@ -37,9 +37,20 @@ def arp_version():
     return None, False
 
 
+def mmd_tools_enabled():
+    # bpy.ops returns a wrapper for any name, so check what mmd_tools registers
+    if not hasattr(bpy.types.PoseBone, 'mmd_bone'):
+        return False
+    try:
+        bpy.ops.mmd_tools.import_model.get_rna_type()
+    except KeyError:
+        return False
+    return True
+
+
 def missing_dependencies():
     missing = []
-    if not hasattr(bpy.ops, 'mmd_tools') or not hasattr(bpy.ops.mmd_tools, 'import_model'):
+    if not mmd_tools_enabled():
         missing.append('mmd_tools')
     if arp_version()[0] is None:
         missing.append('Auto-Rig Pro')
