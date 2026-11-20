@@ -1,0 +1,14 @@
+# Local, never-committed data (MMD models, analysis outputs, personal notes)
+_local/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Blender backups
+*.blend1
+*.blend2
+
+# Build outputs
+dist/
+*.zip
