@@ -36,13 +36,13 @@ mmd_tools で読み込んだ MMD モデル（PMX / PMD）を、Auto-Rig Pro: Qui
 
 Convert モードでは、割り当てていないボーンのコンストレイントはコピーされません。そのため、MMD の IK で腕などを追いかける補助ボーン（例：袖。肩襟から垂れ下がり、腕捩・手首の子の IK ターゲットを追う）が動かなくなります。
 
-Make Rig! の後、ARP リグを選択して `scripts/mmd_convert_fix.py` をテキストエディタで「Run Script」してください。IK の持ち主とターゲットが両方ともリグにオーファンボーンとして残っていて、チェーンに ARP のボーンを含まない MMD IK だけを再作成します。対象の無いモデルでは何もしません。何度実行しても重複しません。
+Make Rig! の後、ARP リグを選択して `mmd_to_arp/fix_convert.py` をテキストエディタで「Run Script」してください。IK の持ち主とターゲットが両方ともリグにオーファンボーンとして残っていて、チェーンに ARP のボーンを含まない MMD IK だけを再作成します。対象の無いモデルでは何もしません。何度実行しても重複しません。
 
 ### Preserve 版の後処理（必須）
 
 Preserve モードの Quick Rig は、割り当てていないボーンも含めて**元の骨格の全ボーンを ARP 側に拘束**します。そのままでは足D・腕捩1〜3・補助ボーンなどの付与（回転コピー）が上書きされ、D ボーンのモデルでは足首が 15cm ほどずれます。
 
-Make Rig! の後、`scripts/mmd_preserve_fix.py` を Blender のテキストエディタで開いて「Run Script」を実行してください（ARP リグか MMD アーマチュアを選択した状態。何度実行しても問題ありません）。このスクリプトは次の処理をします。
+Make Rig! の後、`mmd_to_arp/fix_preserve.py` を Blender のテキストエディタで開いて「Run Script」を実行してください（ARP リグか MMD アーマチュアを選択した状態。何度実行しても問題ありません）。このスクリプトは次の処理をします。
 
 - プリセットで割り当てたボーンを含む MMD の IK（足ＩＫ・つま先ＩＫ、頭まで届く髪 IK など）をミュートする（ARP が動かすボーンを MMD の IK が引き戻さないように）
 - 付与・IK で動くボーン（D ボーン、腕捩1〜3、手捩1〜3、補助ボーン、mmd_tools 内部の `_shadow_` / `_dummy_`）とその子孫から Quick Rig の拘束を外し、モデル本来の仕組みで動かす
@@ -118,7 +118,7 @@ ARP と MMD では捩じりの分担が逆になっているため、そのま�
 
 ## 制限事項
 
-- **付与（他ボーンの回転コピー）で動く補助ボーン**は、Convert モードでは連動が失われ、親ボーンに固定で追従するだけになります。IK で動く補助ボーンは `mmd_convert_fix.py` で復元できます。気になる場合は Preserve モードを使ってください。Make Rig の「Copy Constraints」は mmd_tools の内部ボーンを壊すので ON にしないでください
+- **付与（他ボーンの回転コピー）で動く補助ボーン**は、Convert モードでは連動が失われ、親ボーンに固定で追従するだけになります。IK で動く補助ボーンは `mmd_to_arp/fix_convert.py` で復元できます。気になる場合は Preserve モードを使ってください。Make Rig の「Copy Constraints」は mmd_tools の内部ボーンを壊すので ON にしないでください
 - **腕が補助ボーン鎖で変形するモデル**は Convert では腕が正しく変形しません。Preserve 版を使ってください（両モデルとも Preserve 版 + 後処理で動作を確認済み）
 - Preserve 版では、割り当てボーンを含む MMD IK をミュートします。そのため髪 IK などは無効になり、髪は ARP のオーファンコントローラーで動かすことになります
 - 一部のモデルは、mmd_tools 単体で MMD ボーンを動かしても補助ボーン機構が再現されないため対象外です
@@ -130,10 +130,12 @@ ARP と MMD では捩じりの分担が逆になっているため、そのま�
 | パス | 内容 |
 |---|---|
 | `presets/` | 生成済みの Quick Rig プリセット（Convert 版 `MMD_*`、Preserve 版 `MMD_P_*`） |
+| `mmd_to_arp/` | Blender アドオン（拡張機能）。各モジュールは単体スクリプトとしても使用可 |
+| `mmd_to_arp/mapping.py` | プリセットのマッピング定義 |
 | `mmd_to_arp/detect.py` | 推奨プリセットの判定（Blender のテキストエディタ / `python3 mmd_to_arp/detect.py bones.json [--preserve]`） |
-| `scripts/mmd_convert_fix.py` | Convert 版の後処理：補助ボーンの MMD IK を ARP リグに再作成 |
-| `scripts/mmd_preserve_fix.py` | Preserve 版の後処理：付与・IK で動くボーンを MMD 側に戻す |
-| `tools/make_presets.py` | プリセット生成（`python3 tools/make_presets.py`） |
+| `mmd_to_arp/fix_convert.py` | Convert 版の後処理：補助ボーンの MMD IK を ARP リグに再作成 |
+| `mmd_to_arp/fix_preserve.py` | Preserve 版の後処理：付与・IK で動くボーンを MMD 側に戻す |
+| `tools/make_presets.py` | `mapping.py` からプリセットファイルを生成（`python3 tools/make_presets.py`） |
 | `tools/pmx_bones.py` | PMX / PMD のボーン名・親子・ウェイト合計を JSON に書き出す（構造調査用） |
 | `tests/blender/` | Blender 上での検証ハーネス（インポート → プリセット適用 → Make Rig → ウェイト移行・追従・捩じり分布のチェック） |
 | `_local/` | コミットしないローカルデータ（MMD モデル、解析結果など）。`.gitignore` 済み |

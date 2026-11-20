@@ -297,7 +297,7 @@ def build_and_pose(path, mode='CONVERT', preset=None, **make_kw):
     rig = bpy.data.objects['rig']
     if preset.startswith('MMD_P_'):
         ns = {'__name__': 'mmd_preserve_fix'}
-        exec(open(repo_path('scripts', 'mmd_preserve_fix.py'), encoding='utf-8').read(), ns)
+        exec(open(repo_path('mmd_to_arp', 'fix_preserve.py'), encoding='utf-8').read(), ns)
         ns['fix'](arm, rig)
     pose_test()
     sc = bpy.context.scene
@@ -348,7 +348,7 @@ def validate_model_preserve(path, presets_dir, preset=None, make_kw=None, thresh
         return res
     if preset.startswith('MMD_P_'):
         ns = {'__name__': 'mmd_preserve_fix'}
-        exec(open(repo_path('scripts', 'mmd_preserve_fix.py'), encoding='utf-8').read(), ns)
+        exec(open(repo_path('mmd_to_arp', 'fix_preserve.py'), encoding='utf-8').read(), ns)
         rel, muted = ns['fix'](arm, rig)
         res['released'], res['muted_ik'] = len(rel), muted
     pose_test()
