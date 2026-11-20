@@ -1,13 +1,13 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Pick the Quick Rig preset (Convert: MMD_*, Preserve: MMD_P_*) for an MMD skeleton.
 
 Works with mmd_tools bone names ("腕.L") and raw PMX names ("左腕").
 
-In Blender: right after importing the model with mmd_tools, select its root or
-armature, open this file in the Text Editor and Run Script. The result is shown
-in a popup and printed to the console.
-
-Offline, on the JSON written by tools/pmx_bones.py:
-    python scripts/detect_preset.py bones.json [--preserve]
+Used by the addon; also runs standalone (no relative imports):
+- Blender Text Editor: right after importing the model with mmd_tools, select its
+  root or armature and Run Script. The result is shown in a popup and the console.
+- Offline, on the JSON written by tools/pmx_bones.py:
+    python mmd_to_arp/detect.py bones.json [--preserve]
 """
 
 

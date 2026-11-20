@@ -3,7 +3,7 @@
 Run inside Blender (Text Editor or an MCP / Python console), e.g.:
 
     REPO = '/path/to/repo'
-    for f in ('scripts/detect_preset.py', 'tests/blender/qr_test_helper.py',
+    for f in ('mmd_to_arp/detect.py', 'tests/blender/qr_test_helper.py',
               'tests/blender/qr_pose_test.py'):
         exec(open(REPO + '/' + f, encoding='utf-8').read())
     print(validate_model(REPO + '/_local/mmd/<model>.pmx', REPO + '/presets'))

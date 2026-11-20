@@ -14,7 +14,7 @@ import time
 
 import bpy
 
-for _f in ('scripts/detect_preset.py', 'tests/blender/qr_test_helper.py',
+for _f in ('mmd_to_arp/detect.py', 'tests/blender/qr_test_helper.py',
            'tests/blender/qr_pose_test.py'):
     exec(open(os.path.join(REPO, _f), encoding='utf-8').read())
 

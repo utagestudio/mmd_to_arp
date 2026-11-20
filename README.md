@@ -26,7 +26,7 @@ mmd_tools で読み込んだ MMD モデル（PMX / PMD）を、Auto-Rig Pro: Qui
 1. mmd_tools で PMX / PMD をインポートします
    - **「ボーン名の変換（Rename Bones - L / R Suffix）」は ON のまま**にしてください（既定値）。プリセットは `左腕` → `腕.L` 形式の名前を前提にしています
    - 「Use Underscore」や辞書による英訳は使わないでください
-2. 下の一覧、または `scripts/detect_preset.py` で使うプリセットを決めます
+2. 下の一覧、または `mmd_to_arp/detect.py` で使うプリセットを決めます
 3. アーマチュア（`<モデル名>_arm`）を選択して、ARP タブ → Quick Rig → Import Preset → プリセットを選択
 4. Make Rig! を実行します
    - Convert 版（`MMD_*`）：**Convert** モードで実行します。Convert 版を Preserve モードで使う場合は、ダイアログの **「Constrain Overrides」を ON** にしてください（腕の捩じり割り当てに必要です）
@@ -50,7 +50,7 @@ Make Rig! の後、`scripts/mmd_preserve_fix.py` を Blender のテキストエ�
 
 ### プリセットの自動判定
 
-インポート直後（Make Rig の前）に、MMD モデルのルートかアーマチュアを選択した状態で、Blender のテキストエディタから `scripts/detect_preset.py` を開いて「Run Script」を実行すると、Convert 版・Preserve 版それぞれの推奨プリセットがポップアップとコンソールに表示されます。
+インポート直後（Make Rig の前）に、MMD モデルのルートかアーマチュアを選択した状態で、Blender のテキストエディタから `mmd_to_arp/detect.py` を開いて「Run Script」を実行すると、Convert 版・Preserve 版それぞれの推奨プリセットがポップアップとコンソールに表示されます。
 
 ## プリセット一覧
 
@@ -130,7 +130,7 @@ ARP と MMD では捩じりの分担が逆になっているため、そのま�
 | パス | 内容 |
 |---|---|
 | `presets/` | 生成済みの Quick Rig プリセット（Convert 版 `MMD_*`、Preserve 版 `MMD_P_*`） |
-| `scripts/detect_preset.py` | 推奨プリセットの判定（Blender のテキストエディタ / `python3 scripts/detect_preset.py bones.json [--preserve]`） |
+| `mmd_to_arp/detect.py` | 推奨プリセットの判定（Blender のテキストエディタ / `python3 mmd_to_arp/detect.py bones.json [--preserve]`） |
 | `scripts/mmd_convert_fix.py` | Convert 版の後処理：補助ボーンの MMD IK を ARP リグに再作成 |
 | `scripts/mmd_preserve_fix.py` | Preserve 版の後処理：付与・IK で動くボーンを MMD 側に戻す |
 | `tools/make_presets.py` | プリセット生成（`python3 tools/make_presets.py`） |
