@@ -1,79 +1,94 @@
-# MMD → Auto-Rig Pro Quick Rig プリセット
+# MMD to Auto-Rig Pro
 
-mmd_tools で読み込んだ MMD モデル（PMX / PMD）を、Auto-Rig Pro: Quick Rig で ARP リグ化するためのプリセット集です。
+mmd_tools で読み込んだ MMD モデル（PMX / PMD）を、[Auto-Rig Pro](https://lucky3d.fr/auto-rig-pro/) のリグに変換する Blender アドオンです。変換そのものは Auto-Rig Pro: Quick Rig が行い、このアドオンはモデルの骨格に合ったマッピングの選択と、MMD 特有の仕組み（付与・IK で動く補助ボーン）の後処理を自動化します。
 
-- 検証環境：Blender 5.3 / mmd_tools（拡張機能版）/ Auto-Rig Pro 3.79.22 / Quick Rig 1.28.39
-- 配布されている MMD モデル 241 体（PMX / PMD）のボーン構造を解析し、構造パターンごとに代表 36 体で Make Rig を実行して検証済み（Convert 版・Preserve 版とも）
+Blender add-on that turns MMD models imported with mmd_tools into Auto-Rig Pro rigs, by driving Auto-Rig Pro: Quick Rig with skeleton-specific limb mappings and fixing up MMD helper bones afterwards.
 
-プリセットは 2 系統あります。
+- 配布されている MMD モデル 241 体（PMX / PMD）のボーン構造を解析し、構造パターンごとに代表 36 体で変換を検証しています
+- アドオンを使わずに、Quick Rig のプリセットファイルとして使うこともできます（[後述](#アドオンを使わない場合)）
 
-| 系統 | ファイル | Make Rig のモード | 特徴 |
-|---|---|---|---|
-| Convert 版 | `MMD_*.py`（20 個） | Convert | 骨格を ARP に置き換えてウェイトを載せ替える。ゲームエンジン書き出しなど ARP の機能をフルに使える。構造ごとにプリセットが細かく分かれる |
-| Preserve 版 | `MMD_P_*.py`（10 個） | Preserve + 後処理スクリプト | 元の MMD 骨格・付与・補助ボーンを残し、操作用ボーンだけを ARP で動かす（VMD と同じ考え方）。パターンが少なく、補助ボーンの多いモデルにも対応しやすい |
+## 必要なもの
 
-## 導入
+| | 動作確認バージョン |
+|---|---|
+| Blender 4.2 以降 | 5.3 |
+| [mmd_tools](https://extensions.blender.org/add-ons/mmd-tools/) | 拡張機能版 |
+| Auto-Rig Pro（有償） | 3.79.22 |
+| Auto-Rig Pro: Quick Rig（有償） | 1.28.39 |
 
-1. `presets/*.py` を Quick Rig の Custom Presets Path にコピーします（両系統とも同じフォルダで構いません）
-   （既定は `~/Documents/AutoRigPro/Quick Rig Presets/`。Quick Rig のアドオン設定で変更できます）
-2. Blender を再起動するか、アドオンを再読み込みします
-3. Quick Rig の「Import Preset」メニューに `Mmd_Std_D` などが表示されます（表示名は先頭大文字に変換されます）
+このアドオンは上記 3 つがインストール・有効化されている前提で動作します。
 
-プリセットは ASCII（`\uXXXX` エスケープ）で書き出しているので、日本語版 Windows でも文字化けしません。
+## インストール
+
+1. 拡張機能の zip（`mmd_to_arp-<version>.zip`）を用意します。リポジトリから作る場合は `tools/build_extension.sh` を実行すると `dist/` に作成されます
+2. Blender の「編集 > プリファレンス > 拡張機能」右上のメニューから「ディスクからインストール」で zip を選びます（zip を Blender にドラッグ＆ドロップしても構いません）
 
 ## 使い方
 
 1. mmd_tools で PMX / PMD をインポートします
-   - **「ボーン名の変換（Rename Bones - L / R Suffix）」は ON のまま**にしてください（既定値）。プリセットは `左腕` → `腕.L` 形式の名前を前提にしています
+   - **「ボーン名の変換（Rename Bones - L / R Suffix）」は ON のまま**にしてください（既定値）。`左腕` → `腕.L` 形式の名前を前提にしています
    - 「Use Underscore」や辞書による英訳は使わないでください
-2. 下の一覧、または `mmd_to_arp/detect.py` で使うプリセットを決めます
-3. アーマチュア（`<モデル名>_arm`）を選択して、ARP タブ → Quick Rig → Import Preset → プリセットを選択
-4. Make Rig! を実行します
-   - Convert 版（`MMD_*`）：**Convert** モードで実行します。Convert 版を Preserve モードで使う場合は、ダイアログの **「Constrain Overrides」を ON** にしてください（腕の捩じり割り当てに必要です）
-   - Preserve 版（`MMD_P_*`）：**Preserve** モードで実行し、続けて下記の後処理スクリプトを実行します
+2. モデル（ルート・アーマチュア・メッシュのどれでも可）を選択し、3D ビューのサイドバー「**MMD ARP**」タブを開きます
+3. **Mode** を選びます（下表）。迷ったら Convert で構いません
+4. 「**Detect Preset**」で判定結果と注意事項を確認します（省略可）
+5. 「**Convert to Auto-Rig Pro**」を押します。マッピングの設定、Quick Rig の Make Rig!、後処理までをまとめて実行します
 
-### Convert 版の後処理（推奨）
+| Mode | 内容 | 向いている用途 |
+|---|---|---|
+| Convert | MMD の骨格を ARP に置き換え、ウェイトを ARP のボーンに載せ替える | ARP の機能をフルに使う（ゲームエンジンへの書き出し、リターゲットなど） |
+| Preserve | MMD の骨格・付与・補助ボーンを残し、MMD の操作用ボーンだけを ARP で動かす（VMD と同じ考え方） | 補助ボーンの多いモデルを、元の変形のまま ARP で動かす |
 
-Convert モードでは、割り当てていないボーンのコンストレイントはコピーされません。そのため、MMD の IK で腕などを追いかける補助ボーン（例：袖。肩襟から垂れ下がり、腕捩・手首の子の IK ターゲットを追う）が動かなくなります。
+**Preset** を「Auto」以外にすると、判定を使わずに指定したマッピングで変換します。
 
-Make Rig! の後、ARP リグを選択して `mmd_to_arp/fix_convert.py` をテキストエディタで「Run Script」してください。IK の持ち主とターゲットが両方ともリグにオーファンボーンとして残っていて、チェーンに ARP のボーンを含まない MMD IK だけを再作成します。対象の無いモデルでは何もしません。何度実行しても重複しません。
+### 手順を分けて実行する
 
-### Preserve 版の後処理（必須）
+サイドバーの「Step by Step」から、各手順を個別に実行できます。
 
-Preserve モードの Quick Rig は、割り当てていないボーンも含めて**元の骨格の全ボーンを ARP 側に拘束**します。そのままでは足D・腕捩1〜3・補助ボーンなどの付与（回転コピー）が上書きされ、D ボーンのモデルでは足首が 15cm ほどずれます。
+1. **Load Mapping to Quick Rig**：マッピングを Quick Rig のリム一覧に読み込むだけ。Quick Rig の画面で内容を確認・修正できます
+2. Quick Rig の「Make Rig!」を実行
+3. 生成されたリグを選択して **Run Post-Fix**：Convert / Preserve は自動判別します
 
-Make Rig! の後、`mmd_to_arp/fix_preserve.py` を Blender のテキストエディタで開いて「Run Script」を実行してください（ARP リグか MMD アーマチュアを選択した状態。何度実行しても問題ありません）。このスクリプトは次の処理をします。
+### 後処理の内容
 
-- プリセットで割り当てたボーンを含む MMD の IK（足ＩＫ・つま先ＩＫ、頭まで届く髪 IK など）をミュートする（ARP が動かすボーンを MMD の IK が引き戻さないように）
-- 付与・IK で動くボーン（D ボーン、腕捩1〜3、手捩1〜3、補助ボーン、mmd_tools 内部の `_shadow_` / `_dummy_`）とその子孫から Quick Rig の拘束を外し、モデル本来の仕組みで動かす
-- 髪・スカートなど、割り当てボーンの下に素直にぶら下がるボーンは拘束を残す（ARP のオーファンコントローラーで動かせる）
-
-### プリセットの自動判定
-
-インポート直後（Make Rig の前）に、MMD モデルのルートかアーマチュアを選択した状態で、Blender のテキストエディタから `mmd_to_arp/detect.py` を開いて「Run Script」を実行すると、Convert 版・Preserve 版それぞれの推奨プリセットがポップアップとコンソールに表示されます。
+- **Convert**：Quick Rig はオーファンボーンのコンストレイントをコピーしないため、MMD の IK で腕などを追いかける補助ボーン（袖など）が動かなくなります。IK の持ち主とターゲットがリグに残っていて、チェーンに ARP のボーンを含まない MMD IK を ARP リグ側に再作成します
+- **Preserve**：Quick Rig は元の骨格の全ボーンを ARP に拘束するため、D ボーンや捩じりボーンの付与が上書きされます。割り当てたボーンを含む MMD IK（足ＩＫ・つま先ＩＫ、頭まで届く髪 IK など）をミュートし、付与・IK で動くボーンとその子孫から Quick Rig の拘束を外して、モデル本来の仕組みで動かします。髪・スカートなど素直にぶら下がるボーンは ARP のコントローラーで動かせるまま残します
 
 プリセットの一覧とマッピングの設計は [docs/presets.md](docs/presets.md) を参照してください。
 
 ## 制限事項
 
-- **付与（他ボーンの回転コピー）で動く補助ボーン**は、Convert モードでは連動が失われ、親ボーンに固定で追従するだけになります。IK で動く補助ボーンは `mmd_to_arp/fix_convert.py` で復元できます。気になる場合は Preserve モードを使ってください。Make Rig の「Copy Constraints」は mmd_tools の内部ボーンを壊すので ON にしないでください
-- **腕が補助ボーン鎖で変形するモデル**は Convert では腕が正しく変形しません。Preserve 版を使ってください（両モデルとも Preserve 版 + 後処理で動作を確認済み）
-- Preserve 版では、割り当てボーンを含む MMD IK をミュートします。そのため髪 IK などは無効になり、髪は ARP のオーファンコントローラーで動かすことになります
-- 一部のモデルは、mmd_tools 単体で MMD ボーンを動かしても補助ボーン機構が再現されないため対象外です
-- 腕捩が無い古いモデルは、上腕のウェイトが捩じり 0% 側に割り当てられるため、上腕を捩じっても上腕部は捩じれません（曲げは問題ありません）
-- 髪・スカート・IK ボーンなど割り当てていないボーンは Quick Rig のオーファンボーン（黄色い球のコントローラー）になります。物理演算（剛体）は再現されません
+- **付与（他ボーンの回転コピー）で動く補助ボーン**は、Convert では連動が失われ、親ボーンに固定で追従するだけになります。気になる場合は Preserve を使ってください。Make Rig の「Copy Constraints」は mmd_tools の内部ボーンを壊すので ON にしないでください
+- 補助ボーンを独自の仕組みで動かすモデルのうち、mmd_tools 単体でも補助ボーンの仕組みが再現されないモデルは、どちらのモードでも正しく変形しません（判定時に警告を表示します）
+- Preserve では割り当てボーンを含む MMD IK をミュートするため、髪 IK などは無効になります。髪は ARP のオーファンコントローラーで動かします
+- 腕捩が無い古いモデルは、Convert で上腕を捩じっても上腕部は捩じれません（曲げは問題ありません）
+- 髪・スカート・IK ボーンなど割り当てていないボーンは、Quick Rig のオーファンボーン（黄色い球のコントローラー）になります。物理演算（剛体）は再現されません
 
-## リポジトリ構成
+## アドオンを使わない場合
+
+`presets/` のファイルは、Quick Rig のプリセットとしてそのまま使えます。
+
+1. `presets/*.py` を Quick Rig の Custom Presets Path（既定は `~/Documents/AutoRigPro/Quick Rig Presets/`）にコピーし、Blender を再起動します。「Import Preset」メニューに `Mmd_Std_D` などが表示されます
+2. 使うプリセットは、インポート直後に `mmd_to_arp/detect.py` をテキストエディタで開いて「Run Script」すると表示されます
+3. Convert 版（`MMD_*`）は Convert モード、Preserve 版（`MMD_P_*`）は Preserve モードで Make Rig! を実行します。Convert 版を Preserve モードで使う場合は「Constrain Overrides」を ON にしてください
+4. 生成されたリグを選択して、Convert なら `mmd_to_arp/fix_convert.py`、Preserve なら `mmd_to_arp/fix_preserve.py` をテキストエディタで「Run Script」します（Preserve では必須）
+
+プリセットは ASCII（`\uXXXX` エスケープ）で書き出しているので、日本語版 Windows でも文字化けしません。
+
+## 開発
 
 | パス | 内容 |
 |---|---|
-| `presets/` | 生成済みの Quick Rig プリセット（Convert 版 `MMD_*`、Preserve 版 `MMD_P_*`） |
-| `mmd_to_arp/` | Blender アドオン（拡張機能）。各モジュールは単体スクリプトとしても使用可 |
-| `mmd_to_arp/mapping.py` | プリセットのマッピング定義 |
-| `mmd_to_arp/detect.py` | 推奨プリセットの判定（Blender のテキストエディタ / `python3 mmd_to_arp/detect.py bones.json [--preserve]`） |
-| `mmd_to_arp/fix_convert.py` | Convert 版の後処理：補助ボーンの MMD IK を ARP リグに再作成 |
-| `mmd_to_arp/fix_preserve.py` | Preserve 版の後処理：付与・IK で動くボーンを MMD 側に戻す |
-| `tools/make_presets.py` | `mapping.py` からプリセットファイルを生成（`python3 tools/make_presets.py`） |
+| `mmd_to_arp/` | アドオン本体（Blender 拡張機能）。`detect.py` / `fix_*.py` は単体スクリプトとしても動作 |
+| `presets/` | 生成済みの Quick Rig プリセット |
+| `docs/` | ドキュメント |
+| `tools/make_presets.py` | `mmd_to_arp/mapping.py` からプリセットファイルを生成 |
+| `tools/build_extension.sh` | 拡張機能 zip を `dist/` にビルド（`BLENDER=/path/to/blender` で Blender を指定） |
 | `tools/pmx_bones.py` | PMX / PMD のボーン名・親子・ウェイト合計を JSON に書き出す（構造調査用） |
-| `tests/blender/` | Blender 上での検証ハーネス（インポート → プリセット適用 → Make Rig → ウェイト移行・追従・捩じり分布のチェック） |
-| `_local/` | コミットしないローカルデータ（MMD モデル、解析結果など）。`.gitignore` 済み |
+| `tests/blender/` | Blender 上での検証ハーネス（インポート → 変換 → ウェイト移行・追従・捩じり分布のチェック） |
+| `_local/` | コミットしないローカルデータ（MMD モデル、解析結果など） |
+
+バージョンは `mmd_to_arp/blender_manifest.toml` で管理し、`<major>.<minor>.<fix>` の形式です。開発中は `-dev.<n>` を付けます。
+
+## ライセンス
+
+GPL-3.0-or-later
