@@ -3,10 +3,12 @@
 Run inside Blender (Text Editor or an MCP / Python console), e.g.:
 
     REPO = '/path/to/repo'
-    for f in ('mmd_to_arp/detect.py', 'tests/blender/qr_test_helper.py',
-              'tests/blender/qr_pose_test.py'):
+    for f in ('tests/blender/qr_test_helper.py', 'tests/blender/qr_pose_test.py'):
         exec(open(REPO + '/' + f, encoding='utf-8').read())
-    print(validate_model(REPO + '/_local/mmd/<model>.pmx', REPO + '/presets'))
+    print(validate_model(REPO + '/_local/mmd/<model>.pmx', mode='CONVERT'))
+
+Rigs are generated through the mmd_to_arp add-on (registered from REPO when needed);
+set VIA_ADDON = False to test the preset files with Quick Rig directly instead.
 
 Requires mmd_tools, Auto-Rig Pro and Auto-Rig Pro: Quick Rig. The scene is cleared.
 """
@@ -144,45 +146,114 @@ def _unweighted_vertices(mesh_obj, arm_obj):
     return n
 
 
-def validate_model(path, presets_dir, mode='CONVERT', preset=None, make_kw=None):
-    if mode == 'PRESERVE':
-        return validate_model_preserve(path, presets_dir, preset, make_kw)
+# How rigs are generated in the tests:
+#   True  -> through the add-on (mmd_to_arp.convert operator, post-fix included)
+#   False -> through the preset files + Quick Rig + the post-fix modules
+VIA_ADDON = True
+
+
+def ensure_addon():
+    """Register mmd_to_arp from the repository if it is not registered yet."""
+    root = _repo_root()
+    if root not in sys.path:
+        sys.path.insert(0, root)
+    import mmd_to_arp
+    if not hasattr(bpy.types.Scene, 'mmd_to_arp'):
+        mmd_to_arp.register()
+    return mmd_to_arp
+
+
+def _effective_parents(arm):
+    """Effective parent: the MMD append (付与) source when the bone fully copies its
+    rotation (e.g. 足D follows 足), otherwise the hierarchy parent."""
+    out = {}
+    for pbn in arm.pose.bones:
+        mb = pbn.mmd_bone
+        src = mb.additional_transform_bone
+        if mb.has_additional_rotation and src and mb.additional_transform_influence >= 0.99 \
+                and src in arm.pose.bones:
+            out[pbn.name] = src
+        else:
+            out[pbn.name] = pbn.parent.name if pbn.parent else None
+    return out
+
+
+def _absent_bones(arm, preset_name):
+    from mmd_to_arp import mapping
+    absent = []
+    for limb, props in mapping.get_preset(preset_name).items():
+        if not (limb.endswith('.l') or limb.endswith('.x')):
+            continue
+        for k, v in props.items():
+            if isinstance(v, str) and v and (k.startswith(('bone_', 'override_bone_'))
+                                             or k in ('thumb', 'index', 'middle', 'ring', 'pinky')):
+                if v not in arm.data.bones:
+                    absent.append(v)
+    return absent
+
+
+def generate_rig(arm, mode='CONVERT', preset=None, make_kw=None, via_addon=None):
+    """Generate the ARP rig for `arm`. Returns (rig, preset_name, info)."""
     import contextlib
     import io
+    addon = ensure_addon()
+    from mmd_to_arp import detect, fix_convert, fix_preserve, mapping, quickrig
+    if via_addon is None:
+        via_addon = VIA_ADDON
+    info = {}
+    object_mode()
+    bpy.ops.object.select_all(action='DESELECT')
+    arm.select_set(True)
+    bpy.context.view_layer.objects.active = arm
+    with contextlib.redirect_stdout(io.StringIO()):
+        if via_addon:
+            if make_kw:
+                raise ValueError('make_kw is only supported with via_addon=False')
+            st = bpy.context.scene.mmd_to_arp
+            st.mode = mode
+            st.preset = preset or 'AUTO'
+            if bpy.ops.mmd_to_arp.convert() != {'FINISHED'}:
+                raise RuntimeError('mmd_to_arp.convert failed')
+            rig = bpy.context.active_object
+            if preset is None:
+                preset = st.detected_preserve if mode == 'PRESERVE' else st.detected_convert
+        else:
+            if preset is None:
+                preset, _ = detect.detect_preset_blender(arm, preserve=(mode == 'PRESERVE'))
+            apply_preset(arm, repo_path('presets', preset + '.py'))
+            before = set(bpy.data.objects)
+            make_rig(arm, mode=mode, **(make_kw or {}))
+            rig = next(o for o in bpy.data.objects if o not in before and o.type == 'ARMATURE')
+            if mode == 'PRESERVE' and preset.startswith('MMD_P_'):
+                rel, muted = fix_preserve.fix(arm, rig)
+                info.update(released=len(rel), muted_ik=muted)
+            elif mode == 'CONVERT':
+                created, _ = fix_convert.fix(rig, arm)
+                info['ik_restored'] = created
+    info['absent'] = _absent_bones(arm, preset)
+    return rig, preset, info
+
+
+def validate_model(path, presets_dir=None, mode='CONVERT', preset=None, make_kw=None,
+                   via_addon=None, threshold=0.01):
+    """Import `path`, generate the rig and check it. presets_dir is kept for backward
+    compatibility (preset files are always read from REPO/presets)."""
     import os
     clear_scene()
     arm = import_mmd(path)
     meshes = [o for o in bpy.data.objects if o.type == 'MESH' and o.find_armature() == arm]
     unweighted_before = sum(_unweighted_vertices(m, arm) for m in meshes)
     orig_sig = _group_signatures(meshes)
-    # effective parent: MMD append (付与) source when the bone fully copies its rotation
-    # (e.g. 足D follows 足), otherwise the hierarchy parent
-    orig_parents = {}
-    for pbn in arm.pose.bones:
-        mb = pbn.mmd_bone
-        src = mb.additional_transform_bone
-        if mb.has_additional_rotation and src and mb.additional_transform_influence >= 0.99 \
-                and src in arm.pose.bones:
-            orig_parents[pbn.name] = src
-        else:
-            orig_parents[pbn.name] = pbn.parent.name if pbn.parent else None
-    if preset is None:
-        preset, notes = detect_preset_blender(arm)
-    ok, missing = apply_preset(arm, os.path.join(presets_dir, preset + '.py'))
-    res = {'model': os.path.basename(path), 'preset': preset, 'missing': [m[2] for m in missing
-           if m[0].endswith('.l') or m[0].endswith('.x')]}
-    mmd2arp = _limb_map_to_arp()
-    buf = io.StringIO()
+    eff_parents = _effective_parents(arm)
+    res = {'model': os.path.basename(path), 'mode': mode}
     try:
-        with contextlib.redirect_stdout(buf):
-            make_rig(arm, mode=mode, **(make_kw or {}))
+        rig, preset, info = generate_rig(arm, mode, preset, make_kw, via_addon)
     except Exception as e:
         res['error'] = repr(e)[:300]
         return res
-    rig = bpy.data.objects.get('rig')
-    if rig is None:
-        res['error'] = 'no rig'
-        return res
+    res['preset'] = preset
+    res.update(info)
+    mmd2arp = _limb_map_to_arp(arm)
     if mode == 'CONVERT':
         meshes = [o for o in bpy.data.objects if o.type == 'MESH' and o.find_armature() == rig]
         w = {}
@@ -193,7 +264,10 @@ def validate_model(path, presets_dir, mode='CONVERT', preset=None, make_kw=None)
                     w[gi[g.group]] = w.get(gi[g.group], 0) + g.weight
         res['empty_groups'] = [g for g in KEY_GROUPS if w.get(g, 0) < 0.5]
         res['unweighted_new'] = sum(_unweighted_vertices(m, rig) for m in meshes) - unweighted_before
-        res['not_following'] = follow_check(orig_parents, orig_sig, rig, meshes, mmd2arp)
+        res['not_following'] = follow_check(eff_parents, orig_sig, rig, meshes, mmd2arp, threshold)
+    else:
+        res['not_following'] = follow_check_preserve(eff_parents, orig_sig, arm, rig, mmd2arp,
+                                                     threshold)
     return res
 
 
@@ -210,7 +284,7 @@ def _group_signatures(meshes):
     return {k: (c, round(w, 3)) for k, (c, w) in sig.items() if w > 1e-3}
 
 
-def _limb_map_to_arp():
+def _limb_map_to_arp(arm_obj):
     """mmd bone -> ARP deform bone, from the current Quick Rig limb mapping."""
     scn = bpy.context.scene
     out = {}
@@ -234,10 +308,9 @@ def _limb_map_to_arp():
             for i in range(2, limb.twist_bones_amount + 1):
                 out[g('bone_twist_%02d_01' % i)] = 'arm_twist_%d%s' % (i, sd)
                 out[g('bone_twist_%02d_02' % i)] = 'forearm_twist_%d%s' % (i, sd)
-            arm_obj = bpy.context.view_layer.objects.active
             for f in ('thumb', 'index', 'middle', 'ring', 'pinky'):
                 out[g(f)] = f + '1' + sd
-                b = arm_obj.data.bones.get(g(f)) if arm_obj and arm_obj.type == 'ARMATURE' else None
+                b = arm_obj.data.bones.get(g(f))
                 for k in (2, 3):  # follow the first child chain: phalanges 2 and 3
                     if b is None:
                         break
@@ -282,83 +355,17 @@ def follow_check(orig_parents, orig_sig, rig, meshes, mmd2arp, threshold=0.01):
     return bad
 
 
-def build_and_pose(path, mode='CONVERT', preset=None, **make_kw):
-    """Import, rig with the detected preset, apply the test pose, hide armatures."""
-    import contextlib
-    import io
-    clear_scene()
-    arm = import_mmd(path)
-    notes = []
-    if preset is None:
-        preset, notes = detect_preset_blender(arm, preserve=(mode == 'PRESERVE'))
-    apply_preset(arm, repo_path('presets', '%s.py' % preset))
-    with contextlib.redirect_stdout(io.StringIO()):
-        make_rig(arm, mode=mode, **make_kw)
-    rig = bpy.data.objects['rig']
-    if preset.startswith('MMD_P_'):
-        ns = {'__name__': 'mmd_preserve_fix'}
-        exec(open(repo_path('mmd_to_arp', 'fix_preserve.py'), encoding='utf-8').read(), ns)
-        ns['fix'](arm, rig)
-    pose_test()
-    sc = bpy.context.scene
-    f = sc.frame_current
-    sc.frame_set(f + 1)
-    sc.frame_set(f)
-    rig.hide_set(True)
-    arm.hide_set(True)
-    meshes = [m.name for m in bpy.data.objects if m.type == 'MESH' and m.find_armature() in (arm, rig)
-              and len(m.data.vertices) > 100]
-    return preset, notes, meshes
-
-
-def validate_model_preserve(path, presets_dir, preset=None, make_kw=None, threshold=0.01):
-    """Preserve mode: the mesh stays on the MMD armature. Check that every weighted
-    MMD bone moves with the ARP bone of its nearest driven ancestor (append sources
-    with 100% rotation count as parents, e.g. 足D -> 足)."""
-    import contextlib
-    import io
-    import os
-    clear_scene()
-    arm = import_mmd(path)
-    if preset is None:
-        preset, notes = detect_preset_blender(arm, preserve=True)
-    apply_preset(arm, os.path.join(presets_dir, preset + '.py'))
-    res = {'model': os.path.basename(path), 'preset': preset}
-    mmd2arp = _limb_map_to_arp()
-    meshes = [o for o in bpy.data.objects if o.type == 'MESH' and o.find_armature() == arm]
-    weighted = set(_group_signatures(meshes))
-    eff_parent = {}
-    for pbn in arm.pose.bones:
-        mb = pbn.mmd_bone
-        src = mb.additional_transform_bone
-        if mb.has_additional_rotation and src and mb.additional_transform_influence >= 0.99 \
-                and src in arm.pose.bones:
-            eff_parent[pbn.name] = src
-        else:
-            eff_parent[pbn.name] = pbn.parent.name if pbn.parent else None
-    try:
-        with contextlib.redirect_stdout(io.StringIO()):
-            make_rig(arm, mode='PRESERVE', **(make_kw or {}))
-    except Exception as e:
-        res['error'] = repr(e)[:300]
-        return res
-    rig = bpy.data.objects.get('rig')
-    if rig is None:
-        res['error'] = 'no rig'
-        return res
-    if preset.startswith('MMD_P_'):
-        ns = {'__name__': 'mmd_preserve_fix'}
-        exec(open(repo_path('mmd_to_arp', 'fix_preserve.py'), encoding='utf-8').read(), ns)
-        rel, muted = ns['fix'](arm, rig)
-        res['released'], res['muted_ik'] = len(rel), muted
+def follow_check_preserve(eff_parents, orig_sig, arm, rig, mmd2arp, threshold=0.01):
+    """Preserve mode: the mesh stays on the MMD armature. Every weighted MMD bone must
+    move with the ARP bone of its nearest mapped (effective) ancestor."""
     pose_test()
     bad = []
-    for name in sorted(weighted):
+    for name in sorted(orig_sig):
         if name not in arm.pose.bones:
             continue
         a = name
         while a and a not in mmd2arp:
-            a = eff_parent.get(a)
+            a = eff_parents.get(a)
         if not a:
             continue
         e = rig.pose.bones.get(mmd2arp[a])
@@ -372,5 +379,21 @@ def validate_model_preserve(path, presets_dir, preset=None, make_kw=None, thresh
         if err > threshold:
             bad.append((name, mmd2arp[a], round(err, 3)))
     pose_test(reset=True)
-    res['not_following'] = bad
-    return res
+    return bad
+
+
+def build_and_pose(path, mode='CONVERT', preset=None, via_addon=None, **make_kw):
+    """Import, generate the rig, apply the test pose and hide the armatures."""
+    clear_scene()
+    arm = import_mmd(path)
+    rig, preset, info = generate_rig(arm, mode, preset, make_kw or None, via_addon)
+    pose_test()
+    sc = bpy.context.scene
+    f = sc.frame_current
+    sc.frame_set(f + 1)
+    sc.frame_set(f)
+    rig.hide_set(True)
+    arm.hide_set(True)
+    meshes = [m.name for m in bpy.data.objects if m.type == 'MESH' and m.find_armature() in (arm, rig)
+              and len(m.data.vertices) > 100]
+    return preset, info, meshes

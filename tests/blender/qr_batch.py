@@ -7,6 +7,7 @@ Globals expected before exec():
     MODE         'CONVERT' or 'PRESERVE'
     TIME_BUDGET  seconds to spend in this call
     MODELS_DIR   optional, default REPO/_local/mmd
+    VIA_ADDON    optional, default True: generate rigs through the mmd_to_arp add-on
 """
 import json
 import os
@@ -14,9 +15,10 @@ import time
 
 import bpy
 
-for _f in ('mmd_to_arp/detect.py', 'tests/blender/qr_test_helper.py',
-           'tests/blender/qr_pose_test.py'):
+_via_addon = globals().get('VIA_ADDON', True)
+for _f in ('tests/blender/qr_test_helper.py', 'tests/blender/qr_pose_test.py'):
     exec(open(os.path.join(REPO, _f), encoding='utf-8').read())
+VIA_ADDON = _via_addon
 
 _ROOT = globals().get('MODELS_DIR') or os.path.join(REPO, '_local', 'mmd')
 _reps = json.load(open(LIST_JSON, encoding='utf-8'))
@@ -29,7 +31,7 @@ for _r in _reps:
     if time.time() - _t0 > TIME_BUDGET:
         break
     try:
-        _res = validate_model(os.path.join(_ROOT, _r), os.path.join(REPO, 'presets'), mode=MODE)
+        _res = validate_model(os.path.join(_ROOT, _r), mode=MODE)
     except Exception as _e:
         _res = {'error': 'outer ' + repr(_e)[:300]}
     _results[_r] = _res
@@ -37,4 +39,4 @@ for _r in _reps:
     json.dump(_results, open(OUT_JSON, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 print(len(_results), '/', len(_reps))
 for _k in _new:
-    print(_k.split('/')[-1], {a: b for a, b in _results[_k].items() if a not in ('missing', 'model')})
+    print(_k.split('/')[-1], {a: b for a, b in _results[_k].items() if a not in ('absent', 'model')})
