@@ -7,9 +7,9 @@ Auto-Rig Pro: Quick Rig with skeleton-specific limb mappings.
 Requires mmd_tools, Auto-Rig Pro and Auto-Rig Pro: Quick Rig.
 """
 
-from . import props
+from . import operators, props
 
-_modules = (props,)
+_modules = (props, operators)
 
 
 def register():
