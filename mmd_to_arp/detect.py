@@ -22,9 +22,11 @@ def _normalize(names):
     return out
 
 
-# models whose weights live in many helper bones (auxiliary twist/muscle bones driven by
-# MMD append/IK constraints). Convert mode cannot keep those mechanisms -> Preserve mode.
-COMPLEX_MARKERS = ('腕変形0.L', '腕軸D.L', '足軸D.L', 'ひじ軸D.L')
+# Helper-bone systems that mmd_tools itself does not reproduce in Blender
+# (some models): the result is broken in both modes.
+UNSUPPORTED_MARKERS = ('腕変形0.L', '腕軸D.L', '足軸D.L', 'ひじ軸D.L')
+NOTE_UNSUPPORTED = ('helper-bone system that mmd_tools cannot reproduce: '
+                    'the rig may deform wrongly in both modes')
 
 
 def _spine_thumb(names):
@@ -58,9 +60,11 @@ def detect_preset(bone_weights):
         empty_parts.append('forearm')
     if w('足', '足D') < 1 and w('ひざ', 'ひざD') < 1:
         empty_parts.append('leg')
-    if any(m in names for m in COMPLEX_MARKERS) or empty_parts:
-        notes.append('complex helper-bone rig (no weights on main bones: %s): use Preserve mode'
-                     % (', '.join(empty_parts) or 'helper bones'))
+    if any(m in names for m in UNSUPPORTED_MARKERS):
+        notes.append(NOTE_UNSUPPORTED)
+    elif empty_parts:
+        notes.append('weights are on helper bones (%s): check the result, '
+                     'try Preserve mode if they do not follow' % ', '.join(empty_parts))
     if '上半身2-' in names and '上半身1-' in names:
         return 'MMD_spine1m', notes
     if '手首.L' not in names and '手.L' in names:
@@ -86,8 +90,8 @@ def detect_preset_preserve(bone_weights):
     """Preset for Quick Rig Preserve mode (MMD_P_*). Only operation bones matter."""
     names = _normalize(bone_weights)
     notes = []
-    if any(m in names for m in COMPLEX_MARKERS):
-        notes.append('helper-bone rig that mmd_tools may not reproduce')
+    if any(m in names for m in UNSUPPORTED_MARKERS):
+        notes.append(NOTE_UNSUPPORTED)
     if '上半身2-' in names and '上半身1-' in names:
         return 'MMD_P_spine1m', notes
     if '手首.L' not in names and '手.L' in names:
