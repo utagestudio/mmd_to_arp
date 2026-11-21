@@ -230,6 +230,7 @@ def generate_rig(arm, mode='CONVERT', preset=None, make_kw=None, via_addon=None)
             elif mode == 'CONVERT':
                 created, _ = fix_convert.fix(rig, arm)
                 info['ik_restored'] = created
+                info['append_restored'] = [o for o, _t in fix_convert.fix_append(rig, arm)]
     info['absent'] = _absent_bones(arm, preset)
     return rig, preset, info
 

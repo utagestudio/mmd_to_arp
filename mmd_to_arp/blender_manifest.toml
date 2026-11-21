@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "mmd_to_arp"
-version = "0.1.0"
+version = "0.2.0"
 name = "MMD to Auto-Rig Pro"
 tagline = "Rig MMD models with Auto-Rig Pro through Quick Rig"
 maintainer = "utagestudio"

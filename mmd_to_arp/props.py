@@ -14,6 +14,8 @@ MODE_ITEMS = (
      'drives the MMD operation bones. Best for models with many helper bones'),
 )
 
+IKFK_ITEMS = (('IK', 'IK', 'Inverse kinematics'), ('FK', 'FK', 'Forward kinematics'))
+
 _preset_items_cache = []
 
 
@@ -31,6 +33,11 @@ class MMDARP_Settings(bpy.types.PropertyGroup):
     mode: EnumProperty(name='Mode', items=MODE_ITEMS, default='CONVERT')
     preset: EnumProperty(name='Preset', items=_preset_items,
                          description='Quick Rig limb mapping to use')
+
+    arm_ik_fk: EnumProperty(name='Arms', items=IKFK_ITEMS, default='FK',
+                            description='IK-FK state of the arms in the generated rig')
+    leg_ik_fk: EnumProperty(name='Legs', items=IKFK_ITEMS, default='IK',
+                            description='IK-FK state of the legs in the generated rig')
 
     # cached result of the Detect operator
     detected_target: StringProperty(name='Detected armature', default='')

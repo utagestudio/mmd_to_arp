@@ -5,15 +5,24 @@ Quick Rig (Convert) does not copy the constraints of orphan bones, so helper bon
 that the MMD model drives with IK lose their motion -- e.g. detached sleeves that
 hang from the shoulder and chase IK targets parented to the arm.
 
-This script re-creates the MMD IK constraints on the converted rig when:
-  - the IK owner and its target both exist in the rig as orphan bones (same name),
-  - every bone of the IK chain is an orphan bone (no ARP bone is affected).
-IK on mapped bones (足ＩＫ on ひざ...) is skipped: ARP drives those bones.
+The same goes for MMD "append" (付与: copy the rotation / location of another bone),
+e.g. the eyes that follow the 両目 bone, highlight bones, 肩C.
+
+This script, on the converted rig:
+  - re-creates the MMD IK constraints when the IK owner and its target both exist in
+    the rig as orphan bones (same name) and every bone of the IK chain is an orphan
+    bone. IK on mapped bones (足ＩＫ on ひざ...) is skipped: ARP drives those bones.
+  - restores append when the owner and the append target both exist in the rig as
+    orphan bones, using mmd_tools' own implementation (shadow bones + Transformation
+    constraints). Append on mapped bones (腕捩1 <- 腕捩...) is skipped, and so is append
+    from bones moved by MMD IK.
 
 Used by the addon; also runs standalone: select the ARP rig, open this file in
 the Text Editor and Run Script.
 It is safe to run several times (existing re-created IK is not duplicated).
 """
+import sys
+
 import bpy
 
 CNS_NAME = 'MMD_IK'
@@ -83,15 +92,91 @@ def fix(rig, src):
     return created, skipped
 
 
+APPEND_PROPS = ('has_additional_rotation', 'has_additional_location',
+                'additional_transform_influence')
+
+
+def _mmd_fnbone():
+    """mmd_tools' FnBone (the extension repository name may vary)."""
+    for name, mod in list(sys.modules.items()):
+        if name.endswith('mmd_tools.core.bone') and hasattr(mod, 'FnBone'):
+            return mod.FnBone
+    return None
+
+
+def _ik_chain_bones(arm):
+    """Names of the bones moved by enabled IK constraints of `arm`."""
+    names = set()
+    for pb in arm.pose.bones:
+        for c in pb.constraints:
+            if c.type != 'IK' or c.mute or c.influence == 0 or not c.subtarget:
+                continue
+            b = pb if c.use_tail else pb.parent
+            for _ in range(c.chain_count or 255):
+                if b is None:
+                    break
+                names.add(b.name)
+                b = b.parent
+    return names
+
+
+def fix_append(rig, src):
+    """Restore MMD append on orphan bones. Returns [(owner, target)] restored."""
+    fn = _mmd_fnbone()
+    if fn is None or not hasattr(bpy.types.PoseBone, 'mmd_bone'):
+        return []
+    # append owner -> target, for owners and targets that are orphan bones of the rig
+    pairs = {}
+    for spb in src.pose.bones:
+        mb = spb.mmd_bone
+        if spb.is_mmd_shadow_bone or not (mb.has_additional_rotation or mb.has_additional_location):
+            continue
+        target = mb.additional_transform_bone
+        if target and spb.name in rig.pose.bones and target in rig.pose.bones:
+            pairs[spb.name] = target
+    # a target moved by MMD IK (even re-created, it solves against ARP bones) or by an
+    # append that is not restored moves differently in the rig: skip such appends
+    lost = _ik_chain_bones(src)
+    lost |= {b.name for b in src.pose.bones if not b.is_mmd_shadow_bone and b.name not in pairs
+             and (b.mmd_bone.has_additional_rotation or b.mmd_bone.has_additional_location)
+             and b.mmd_bone.additional_transform_bone}
+    changed = True
+    while changed:
+        changed = False
+        for owner, target in list(pairs.items()):
+            if target in lost:
+                del pairs[owner]
+                lost.add(owner)
+                changed = True
+    restored = []
+    for spb in src.pose.bones:
+        if spb.name not in pairs:
+            continue
+        mb = spb.mmd_bone
+        target = pairs[spb.name]
+        owner = rig.pose.bones[spb.name]
+        rb = owner.mmd_bone
+        for p in APPEND_PROPS:
+            setattr(rb, p, getattr(mb, p))
+        rb.additional_transform_bone = target
+        restored.append((spb.name, target))
+    if restored:
+        fn.setup_special_bone_collections(rig)
+        fn.apply_additional_transformation(rig)
+    return restored
+
+
 def main():
     rig, src = _find_rig_and_source()
     if rig is None or src is None:
         print('ARP rig or source MMD armature not found. Run Make Rig! (Convert) first.')
-        return [], []
+        return [], [], []
     created, skipped = fix(rig, src)
-    print('mmd_convert_fix: %s <- %s: re-created %d IK (%s), skipped %d'
-          % (rig.name, src.name, len(created), ', '.join(created), len(skipped)))
-    return created, skipped
+    restored = fix_append(rig, src)
+    print('mmd_convert_fix: %s <- %s: re-created %d IK (%s), skipped %d, restored %d append (%s)'
+          % (rig.name, src.name, len(created), ', '.join(created), len(skipped),
+             len(restored), ', '.join(o for o, _t in restored)))
+    return created, skipped, restored
 
 
 if __name__ == '__main__':
