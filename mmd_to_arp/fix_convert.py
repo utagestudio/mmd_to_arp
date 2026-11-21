@@ -14,8 +14,10 @@ This script, on the converted rig:
     bone. IK on mapped bones (足ＩＫ on ひざ...) is skipped: ARP drives those bones.
   - restores append when the owner and the append target both exist in the rig as
     orphan bones, using mmd_tools' own implementation (shadow bones + Transformation
-    constraints). Append on mapped bones (腕捩1 <- 腕捩...) is skipped, and so is append
-    from bones moved by MMD IK that could not be re-created.
+    constraints). Append from a main bone replaced by an Auto-Rig Pro bone (足, ひざ...)
+    goes through a proxy bone that reproduces the local rotation of the MMD bone. Append
+    on mapped owners (腕捩1 <- 腕捩...) is skipped, and so is append from bones moved by
+    MMD IK that could not be re-created.
   - after a motion bake, gives the bones driven by these mechanisms their VMD keys back
     (the bake keyed their final pose, which would apply the mechanism twice).
 
@@ -26,6 +28,7 @@ It is safe to run several times (existing re-created IK is not duplicated).
 import sys
 
 import bpy
+from mathutils import Vector
 
 CNS_NAME = 'MMD_IK'
 IK_BONE_PROPS = ('lock_ik_x', 'lock_ik_y', 'lock_ik_z',
@@ -125,19 +128,117 @@ def _ik_chain_bones(arm, skip=()):
     return names
 
 
+PROXY_PREFIX = '_mmd_proxy_'
+PROXY_CNS = 'mmd_proxy'
+
+
+def mapped_bones(src):
+    """MMD bone -> Auto-Rig Pro deform bone for the main bones of the current Quick Rig
+    limb mapping (spine, neck, head, shoulder, arm, elbow, wrist, leg bones). Twist
+    bones are left out: MMD and Auto-Rig Pro split the twist differently."""
+    out = {}
+    for limb in getattr(bpy.context.scene, 'limb_map', ()):
+        sd = {'LEFT': '.l', 'RIGHT': '.r', 'CENTER': '.x'}.get(limb.side, '.x')
+        if limb.type == 'SPINE':
+            items = [(i, 'root' if i == 1 else 'spine_%02d' % (i - 1))
+                     for i in range(1, limb.spine_amount + 1)]
+        elif limb.type == 'HEAD':
+            items = [(1, 'neck'), (2, 'head')]
+        elif limb.type == 'ARM':
+            items = [(1, 'shoulder'), (2, 'arm_stretch'), (4, 'forearm_stretch'), (6, 'hand')]
+        elif limb.type == 'LEG':
+            items = [(1, 'thigh_stretch'), (3, 'leg_stretch'), (5, 'foot'), (6, 'toes_01')]
+        else:
+            continue
+        for i, arp in items:
+            name = getattr(limb, 'bone_%02d' % i, '')
+            if name and name in src.data.bones:
+                out[name] = arp + sd
+    return out
+
+
+def _rig_equivalent(rig, src, name, mapped):
+    """The rig bone that moves like the MMD bone `name` (or its nearest ancestor)."""
+    b = src.data.bones.get(name)
+    while b is not None:
+        if b.name in rig.data.bones:
+            return b.name
+        if mapped.get(b.name) in rig.data.bones:
+            return mapped[b.name]
+        b = b.parent
+    return None
+
+
+def _make_proxies(rig, src, targets, mapped):
+    """For append targets that are mapped bones (replaced by Auto-Rig Pro bones), build a
+    proxy bone with the rest pose of the MMD bone, under the rig equivalent of its MMD
+    parent, copying the world transform of a follower parented to the Auto-Rig Pro bone:
+    its local rotation is the one of the MMD bone. Returns {target: proxy name}."""
+    view_layer = bpy.context.view_layer
+    active, mode = view_layer.objects.active, rig.mode
+    hidden = rig.hide_get()
+    rig.hide_set(False)
+    view_layer.objects.active = rig
+    bpy.ops.object.mode_set(mode='EDIT')
+    proxies = {}
+    try:
+        eb = rig.data.edit_bones
+        to_rig = rig.matrix_world.inverted() @ src.matrix_world
+        for t in targets:
+            sb = src.data.bones[t]
+            parent = _rig_equivalent(rig, src, sb.parent.name, mapped) if sb.parent else None
+            if parent is None:
+                continue
+            m = to_rig @ sb.matrix_local
+            name = PROXY_PREFIX + t
+            for bname, bparent in ((name + '_follow', mapped[t]), (name, parent)):
+                b = eb.get(bname) or eb.new(bname)
+                b.head = (0.0, 0.0, 0.0)
+                b.tail = (0.0, sb.length, 0.0)
+                b.matrix = m.normalized()
+                b.parent = eb[bparent]
+                b.use_connect = False
+                b.use_deform = False
+            proxies[t] = name
+    finally:
+        bpy.ops.object.mode_set(mode='OBJECT')
+    coll = rig.data.collections.get('mmd_shadow')
+    for t, name in proxies.items():
+        for bname in (name, name + '_follow'):
+            bone = rig.data.bones[bname]
+            if coll is not None:
+                for c in list(bone.collections):
+                    c.unassign(bone)
+                coll.assign(bone)
+        pb = rig.pose.bones[name]
+        pb.rotation_mode = 'QUATERNION'
+        c = pb.constraints.get(PROXY_CNS) or pb.constraints.new('COPY_TRANSFORMS')
+        c.name = PROXY_CNS
+        c.target = rig
+        c.subtarget = name + '_follow'
+    view_layer.objects.active = rig
+    if mode != 'OBJECT':
+        bpy.ops.object.mode_set(mode=mode)
+    view_layer.objects.active = active
+    rig.hide_set(hidden)
+    return proxies
+
+
 def fix_append(rig, src):
     """Restore MMD append on orphan bones. Returns [(owner, target)] restored."""
     fn = _mmd_fnbone()
     if fn is None or not hasattr(bpy.types.PoseBone, 'mmd_bone'):
         return []
-    # append owner -> target, for owners and targets that are orphan bones of the rig
+    # append owner -> target, for owners that are orphan bones of the rig and targets that
+    # are orphan bones too, or main bones replaced by Auto-Rig Pro bones (through a proxy)
+    mapped = {k: v for k, v in mapped_bones(src).items() if v in rig.data.bones}
     pairs = {}
     for spb in src.pose.bones:
         mb = spb.mmd_bone
         if spb.is_mmd_shadow_bone or not (mb.has_additional_rotation or mb.has_additional_location):
             continue
         target = mb.additional_transform_bone
-        if target and spb.name in rig.pose.bones and target in rig.pose.bones:
+        if target and spb.name in rig.pose.bones and (target in rig.pose.bones or target in mapped):
             pairs[spb.name] = target
     # a target moved by an MMD IK that is not re-created on the rig, or by an append that
     # is not restored, moves differently in the rig: skip such appends. IK re-created by
@@ -153,16 +254,23 @@ def fix_append(rig, src):
     while changed:
         changed = False
         for owner, target in list(pairs.items()):
-            if target in lost:
+            # mapped targets move like in MMD: Auto-Rig Pro drives them, IK included
+            if target in lost and target not in mapped:
                 del pairs[owner]
                 lost.add(owner)
                 changed = True
+    proxies = _make_proxies(rig, src, sorted({t for t in pairs.values() if t in mapped
+                                              and t not in rig.pose.bones}), mapped)
     restored = []
     for spb in src.pose.bones:
         if spb.name not in pairs:
             continue
         mb = spb.mmd_bone
         target = pairs[spb.name]
+        if target not in rig.pose.bones:
+            if target not in proxies:
+                continue
+            target = proxies[target]
         owner = rig.pose.bones[spb.name]
         rb = owner.mmd_bone
         for p in APPEND_PROPS:
