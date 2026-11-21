@@ -163,7 +163,7 @@ def _rig_equivalent(rig, src, name, mapped):
     while b is not None:
         if b.name in rig.data.bones:
             return b.name
-        if mapped.get(b.name) in rig.data.bones:
+        if b.name in mapped and mapped[b.name] in rig.data.bones:
             return mapped[b.name]
         b = b.parent
     return None
