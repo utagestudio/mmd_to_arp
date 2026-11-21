@@ -244,8 +244,7 @@ def make_rig(context, armature, mode='CONVERT', **options):
     op.error_qr_data = False
     for attr in ('fingers_ctrl', 'toes_ctrl', 'tail_ctrl', 'spline_ctrl',
                  'meshes_parented_to_bones', 'skin_dict', 'orphan_bones_dict'):
-        if hasattr(op, attr):
-            setattr(op, attr, {})
+        setattr(op, attr, {})
 
     before = set(bpy.data.objects)
     with context.temp_override(**_view3d_override(context)):
