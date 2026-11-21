@@ -14,7 +14,7 @@ A Blender add-on that converts MMD models into Auto-Rig Pro rigs.
 
 | Software | Tested version |
 |---|---|
-| Blender 4.5 or later | 5.3 |
+| Blender 4.5 or later | 4.5, 5.3 |
 | [mmd_tools](https://extensions.blender.org/add-ons/mmd-tools/) | Extension version |
 | [Auto-Rig Pro](https://lucky3d.fr/auto-rig-pro/) (paid) | 3.79 |
 | Auto-Rig Pro: Quick Rig (paid) | 1.28 |

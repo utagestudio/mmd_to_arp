@@ -14,7 +14,7 @@ MMD モデルを Auto-Rig Pro のリグに変換する Blender アドオンで�
 
 | ソフトウェア | 動作確認バージョン |
 |---|---|
-| Blender 4.5 以降 | 5.3 |
+| Blender 4.5 以降 | 4.5, 5.3 |
 | [mmd_tools](https://extensions.blender.org/add-ons/mmd-tools/) | 拡張機能版 |
 | [Auto-Rig Pro](https://lucky3d.fr/auto-rig-pro/)（有償） | 3.79 |
 | Auto-Rig Pro: Quick Rig（有償） | 1.28 |
