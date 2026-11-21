@@ -12,3 +12,6 @@ __pycache__/
 # Build outputs
 dist/
 *.zip
+
+# Personal Claude Code instructions
+CLAUDE.local.md

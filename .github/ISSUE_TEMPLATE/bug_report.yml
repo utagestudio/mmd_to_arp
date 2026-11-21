@@ -1,0 +1,62 @@
+name: Bug report / 不具合の報告
+description: Something does not work as expected. / 期待どおりに動かない。
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not attach MMD model or motion files.** Describe the bone names and the hierarchy instead.
+        **MMD モデルやモーションのファイルは添付しないでください。** 代わりにボーンの名前と親子関係を書いてください。
+  - type: input
+    id: addon
+    attributes:
+      label: MMD to Auto-Rig Pro version / バージョン
+      placeholder: "0.5.0"
+    validations:
+      required: true
+  - type: input
+    id: blender
+    attributes:
+      label: Blender version / バージョン
+      placeholder: "4.5.12"
+    validations:
+      required: true
+  - type: input
+    id: deps
+    attributes:
+      label: mmd_tools / Auto-Rig Pro / Quick Rig versions / バージョン
+      placeholder: "mmd_tools 4.x, Auto-Rig Pro 3.79.x, Quick Rig 1.28.x"
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options:
+        - Convert
+        - Preserve
+        - Not related / 関係なし
+    validations:
+      required: true
+  - type: input
+    id: preset
+    attributes:
+      label: Preset / プリセット
+      description: Shown by "Detect Preset". / 「Detect Preset」で表示されます。
+      placeholder: "MMD_std_D"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes shown in the panel / パネルに表示された注意
+      description: Warnings, "untested"... / 警告、「untested」など
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps, expected and actual result / 操作、期待した結果、実際の結果
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Error message or console output / エラーメッセージ・コンソールの出力
+      render: text

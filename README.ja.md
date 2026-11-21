@@ -24,7 +24,7 @@ MMD モデルを Auto-Rig Pro のリグに変換する Blender アドオンで�
 
 ## インストール
 
-1. 配布ページから zip ファイル（`mmd_to_arp-<バージョン>.zip`）をダウンロードします。
+1. [Releases](https://github.com/utagestudio/mmd_to_arp/releases) から zip ファイル（`mmd_to_arp-<バージョン>.zip`）をダウンロードします。zip は解凍しないでください。
 2. Blender で「編集 > プリファレンス」を開き、「Get Extensions」を選びます。
 3. 右上のメニューから「Install from Disk」を選び、zip ファイルを選びます。
    - zip ファイルを Blender の画面にドラッグ＆ドロップしても、インストールできます。
@@ -114,6 +114,40 @@ Quick Rig は、元の骨格のすべてのボーンを Auto-Rig Pro に拘束�
 
 モーションを焼き込んだリグでは、IK-FK スイッチのキーを削除します。Quick Rig の Make Rig で焼き込んだリグも対象です。
 
+## よくある質問・トラブル
+
+**パネルに「Required add-ons not enabled」と表示される**
+- 表示されているアドオン（mmd_tools、Auto-Rig Pro、Auto-Rig Pro: Quick Rig）を有効にしてください。
+
+**パネルに「untested」と表示される**
+- インストールされている Auto-Rig Pro または Quick Rig が、動作を確認していないバージョンです。
+- そのまま使えることが多いですが、うまく変換できない場合は、動作確認済みのバージョン（「必要なもの」を参照）と比べてください。
+
+**判定されたプリセットがおかしい、腕や脚がずれる**
+- mmd_tools のインポート設定を確認してください。「ボーン名の変換（Rename Bones - L / R Suffix）」が ON で、「Use Underscore」と英語への変換が OFF である必要があります。
+- **Preset** で別のプリセットを選んで、変換し直してください。
+- 「Step by Step」の **Load Mapping to Quick Rig** で読み込んだあと、Quick Rig の画面でボーンの割り当てを直すこともできます。
+
+**変換後、一部のメッシュ（袖、装飾、補助ボーンで動く部分）が正しく動かない**
+- **Preserve** で変換し直してください。Preserve は、モデル本来の補助ボーンの仕組みを残します。
+- 判定時に「helper-bone system that mmd_tools cannot reproduce」と表示されたモデルは、どちらの Mode でも正しく変形しません。
+
+**IK にすると腕が逆向きに曲がる**
+- 0.2.0 より前のバージョンで変換したリグでは、この問題が起きることがあります。最新のバージョンで変換し直してください。
+- それでも起きる場合は、肘の IK ポール（c_arms_pole）の位置を動かしてください。
+
+**変換をやり直したい**
+- Ctrl+Z で変換前に戻せます。うまく戻らない場合は、モデルを読み込み直してください。
+
+**「Bake Motion」が表示されない**
+- MMD のアーマチュアにモーションがありません。モデルを選択し、mmd_tools でモーション（VMD）を読み込んでから変換してください。
+
+**モーションを焼き込んだリグで、FK に戻すと手足が元の動きに戻る**
+- 仕様です。焼き込んだモーションは FK コントローラーにあります。手足を自由に動かしたい区間だけ IK に切り替えてください（「IK / FK の切り替え」を参照）。
+
+**Make Rig の「Copy Constraints」を ON にしたら壊れた**
+- 「Copy Constraints」は mmd_tools の内部ボーンを壊すので、OFF のまま使ってください。MMD の IK と付与は、変換後の修正で復元します。
+
 ## 制限事項
 
 - 付与親が、腕や脚など Auto-Rig Pro に割り当てたボーンの場合、Convert ではその付与が失われます。補助ボーンは、親ボーンについて動くだけになります。気になる場合は Preserve を使ってください。
@@ -152,4 +186,7 @@ Quick Rig は、元の骨格のすべてのボーンを Auto-Rig Pro に拘束�
 
 GPL-3.0-or-later です。全文は [LICENSE](LICENSE) を参照してください。
 
-開発者向けの情報は [DEVELOPMENT.md](DEVELOPMENT.md) にあります。
+- 不具合の報告や質問は [GitHub Issues](https://github.com/utagestudio/mmd_to_arp/issues) にお願いします。
+- 各バージョンの変更点は [CHANGELOG.ja.md](CHANGELOG.ja.md) を参照してください。
+- 不具合の報告や開発への参加については [CONTRIBUTING.md](CONTRIBUTING.md#日本語) を参照してください。
+- 開発者向けの情報は [DEVELOPMENT.md](DEVELOPMENT.md) にあります。
