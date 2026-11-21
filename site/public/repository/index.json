@@ -1,0 +1,30 @@
+{
+  "version": "v1",
+  "blocklist": [],
+  "assetlib_auth_method": "PER_LIBRARY",
+  "data": [
+    {
+      "schema_version": "1.0.0",
+      "id": "mmd_to_arp",
+      "name": "MMD to Auto-Rig Pro",
+      "tagline": "Rig MMD models with Auto-Rig Pro through Quick Rig",
+      "version": "0.5.0",
+      "type": "add-on",
+      "maintainer": "utagestudio",
+      "license": [
+        "SPDX:GPL-3.0-or-later"
+      ],
+      "blender_version_min": "4.5.0",
+      "copyright": [
+        "2026 utagestudio"
+      ],
+      "tags": [
+        "Rigging",
+        "Animation"
+      ],
+      "archive_url": "./mmd_to_arp-0.5.0.zip",
+      "archive_size": 35605,
+      "archive_hash": "sha256:eeaeecb6d411b4d8df6980e516a4a583d2e507d23b28abcb6a7517cb7c4e0c84"
+    }
+  ]
+}

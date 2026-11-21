@@ -1,0 +1,12 @@
+# Blender reads the extension repository: always revalidate so new releases show up.
+/repository/*
+  Cache-Control: no-cache
+/repository/index.json
+  Content-Type: application/json; charset=utf-8
+
+/assets/*
+  Cache-Control: public, max-age=86400
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

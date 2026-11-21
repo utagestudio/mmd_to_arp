@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mmd-to-arp.utage.studio/sitemap.xml
