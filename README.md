@@ -42,6 +42,8 @@ Blender add-on that turns MMD models imported with mmd_tools into Auto-Rig Pro r
 
 **Arms / Legs** で、生成するリグの腕・脚を IK と FK のどちらで始めるかを選べます（既定は Quick Rig と同じく腕 FK・脚 IK）。
 
+**Other Bones** は、腕・脚・体幹以外の MMD ボーン（髪、スカート、アクセサリーなど）のコントローラーの形です。既定の **Line** はボーンに沿った線で、ボーンの並びが分かります。**Sphere** / **Box** は Quick Rig 標準の球・箱です。
+
 ### IK / FK の切り替え
 
 リグ（またはリグで変形するメッシュ）を選ぶと、サイドバーに「**IK / FK**」パネルが表示されます。腕・脚を左右ごと、または「All」でまとめて IK / FK に切り替えます。Auto-Rig Pro の「Snap IK-FK」と同じ処理なので、ポーズを保ったまま切り替わり、自動キー挿入が ON ならキーも打たれます。ボーンを選択する必要はありません。
