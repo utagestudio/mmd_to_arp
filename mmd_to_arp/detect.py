@@ -22,11 +22,11 @@ def _normalize(names):
     return out
 
 
-# Helper-bone systems that mmd_tools itself does not reproduce in Blender: the result
-# is broken in both modes.
+# Helper-bone systems that mmd_tools itself does not reproduce exactly in Blender: the
+# rig follows mmd_tools, so it may deform differently from MMD.
 UNSUPPORTED_MARKERS = ('腕変形0.L', '腕軸D.L', '足軸D.L', 'ひじ軸D.L')
-NOTE_UNSUPPORTED = ('helper-bone system that mmd_tools cannot reproduce: '
-                    'the rig may deform wrongly in both modes')
+NOTE_UNSUPPORTED = ('helper-bone system that mmd_tools does not reproduce exactly: '
+                    'the rig follows mmd_tools and may deform differently from MMD')
 
 
 def _spine_thumb(names):
