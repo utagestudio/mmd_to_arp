@@ -16,6 +16,13 @@ LIMBS = {
     'ARM': ('c_hand_ik', 'fk_to_ik_arm', 'ik_to_fk_arm'),
     'LEG': ('c_foot_ik', 'fk_to_ik_leg', 'ik_to_fk_leg'),
 }
+# FK controls: when they are animated (a baked motion), switching to FK shows that
+# animation, so the IK pose is not snapped onto them (it would only overwrite a key)
+FK_CONTROLS = {
+    'ARM': ('c_arm_fk', 'c_forearm_fk', 'c_hand_fk'),
+    'LEG': ('c_thigh_fk', 'c_leg_fk', 'c_foot_fk'),
+}
+SWITCH_PATH = '["ik_fk_switch"]'
 
 
 def rig_functions():
@@ -35,27 +42,56 @@ def state(rig, limb, side):
 
 
 def switch(context, rig, limb, side, target):
-    """Switch one limb to `target` ('IK' / 'FK') keeping its pose. Returns True if switched."""
+    """Switch one limb to `target` ('IK' / 'FK'). The pose is kept (Auto-Rig Pro snap),
+    except when switching to animated FK controls: their animation is shown as is.
+    With auto keying, the switch is keyed with constant interpolation (no IK-FK blend
+    between two keys). Returns True if switched."""
     current = state(rig, limb, side)
     if current is None or current == target:
         return False
-    rf = rig_functions()
-    if rf is None:
-        raise RuntimeError('Auto-Rig Pro is not enabled')
-    # "fk_to_ik" snaps the FK controls to the IK pose, then switches to FK
-    func = getattr(rf, LIMBS[limb][1] if target == 'FK' else LIMBS[limb][2])
-
-    view_layer = context.view_layer
-    active = view_layer.objects.active
-    mirror = rig.pose.use_mirror_x
-    view_layer.objects.active = rig  # Auto-Rig Pro looks bones up on the active object
-    rig.pose.use_mirror_x = False
-    try:
-        func(rig, side)
-    finally:
-        rig.pose.use_mirror_x = mirror
-        view_layer.objects.active = active
+    scn = context.scene
+    autokey = scn.tool_settings.use_keyframe_insert_auto
+    pb = rig.pose.bones[LIMBS[limb][0] + side]
+    if target == 'FK' and fk_animated(rig, limb, side):
+        pb['ik_fk_switch'] = 1.0
+        if autokey:
+            pb.keyframe_insert(data_path=SWITCH_PATH)
+    else:
+        rf = rig_functions()
+        if rf is None:
+            raise RuntimeError('Auto-Rig Pro is not enabled')
+        # "fk_to_ik" snaps the FK controls to the IK pose, then switches to FK
+        func = getattr(rf, LIMBS[limb][1] if target == 'FK' else LIMBS[limb][2])
+        view_layer = context.view_layer
+        active = view_layer.objects.active
+        mirror = rig.pose.use_mirror_x
+        view_layer.objects.active = rig  # Auto-Rig Pro looks bones up on the active object
+        rig.pose.use_mirror_x = False
+        try:
+            func(rig, side)
+        finally:
+            rig.pose.use_mirror_x = mirror
+            view_layer.objects.active = active
+    if autokey:
+        _constant_key(rig, 'pose.bones["%s"]%s' % (pb.name, SWITCH_PATH), scn.frame_current)
     return True
+
+
+def fk_animated(rig, limb, side):
+    """True if the FK controls of the limb have animation."""
+    prefixes = tuple('pose.bones["%s%s"]' % (n, side) for n in FK_CONTROLS[limb])
+    return any(fc.data_path.startswith(prefixes)
+               for fcurves in _fcurve_collections(rig) for fc in fcurves)
+
+
+def _constant_key(rig, data_path, frame):
+    for fcurves in _fcurve_collections(rig):
+        for fc in fcurves:
+            if fc.data_path == data_path:
+                for kp in fc.keyframe_points:
+                    if abs(kp.co[0] - frame) < 0.5:
+                        kp.interpolation = 'CONSTANT'
+                fc.update()
 
 
 def _fcurve_collections(obj):
@@ -85,7 +121,7 @@ def remove_switch_keys(rig):
     changed = []
     for fcurves in _fcurve_collections(rig):
         for fc in list(fcurves):
-            if not fc.data_path.endswith('["ik_fk_switch"]'):
+            if not fc.data_path.endswith(SWITCH_PATH):
                 continue
             value = fc.evaluate(frame)
             name = fc.data_path.split('"')[1]
