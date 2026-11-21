@@ -16,6 +16,12 @@ MODE_ITEMS = (
 
 IKFK_ITEMS = (('IK', 'IK', 'Inverse kinematics'), ('FK', 'FK', 'Forward kinematics'))
 
+ORPHAN_SHAPE_ITEMS = (
+    ('LINE', 'Line', 'A line along each bone: shows the bone chains (hair, skirt...)'),
+    ('SPHERE', 'Sphere', 'A sphere at each bone (Quick Rig default)'),
+    ('BOX', 'Box', 'A box at each bone'),
+)
+
 _preset_items_cache = []
 
 
@@ -38,6 +44,10 @@ class MMDARP_Settings(bpy.types.PropertyGroup):
                             description='IK-FK state of the arms in the generated rig')
     leg_ik_fk: EnumProperty(name='Legs', items=IKFK_ITEMS, default='IK',
                             description='IK-FK state of the legs in the generated rig')
+    orphan_shape: EnumProperty(name='Other Bones', items=ORPHAN_SHAPE_ITEMS, default='LINE',
+                               description='Controller shape of the MMD bones that are not '
+                                           'part of the arms, legs, spine... (hair, skirt, '
+                                           'accessories)')
 
     # cached result of the Detect operator
     detected_target: StringProperty(name='Detected armature', default='')

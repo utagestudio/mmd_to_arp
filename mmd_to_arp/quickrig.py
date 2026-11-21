@@ -135,6 +135,48 @@ def fix_elbow_direction(scene, armature):
     return changed
 
 
+# Quick Rig only offers spheres and boxes for the orphan bones (the MMD hair, skirt,
+# accessory bones...): many overlapping spheres hide which bone is which, a line along
+# each bone shows the chains.
+ORPHAN_SHAPES = {'LINE': 'cs_line', 'SPHERE': 'cs_sphere', 'BOX': 'cs_box'}
+QR_ORPHAN_SHAPES = ('SPHERE', 'BOX')  # natively supported by Quick Rig
+
+
+def quickrig_orphan_shape(shape):
+    """Value of Quick Rig's orphan_bones_shape for our `shape` setting."""
+    return ORPHAN_SHAPES[shape if shape in QR_ORPHAN_SHAPES else 'SPHERE']
+
+
+def _shape_object(rig, name):
+    """The Auto-Rig Pro shape object `name` used by this rig (several rigs in a file
+    may have their own copies, cs_line.001...)."""
+    for pb in rig.pose.bones:
+        cs = pb.custom_shape
+        if cs and (cs.name == name or cs.name.startswith(name + '.')):
+            return cs
+    return bpy.data.objects.get(name)
+
+
+def set_orphan_shape(rig, shape):
+    """Give the orphan bones (tagged "cc" by Quick Rig) the custom shape `shape`, for
+    the shapes Quick Rig cannot assign itself. Returns the number of bones changed."""
+    if shape in QR_ORPHAN_SHAPES:
+        return 0
+    qr_shape = quickrig_orphan_shape(shape)
+    cs = _shape_object(rig, ORPHAN_SHAPES[shape])
+    if cs is None:
+        return 0
+    count = 0
+    for pb in rig.pose.bones:
+        cur = pb.custom_shape
+        if 'cc' not in pb.keys() or cur is None or cur.name.split('.')[0] != qr_shape:
+            continue
+        pb.custom_shape = cs
+        pb.custom_shape_scale_xyz = (1.0, 1.0, 1.0)  # the line spans the whole bone
+        count += 1
+    return count
+
+
 def validate_mapping(scene, armature):
     """Required bones, as checked by Quick Rig before generating the rig."""
     bones = armature.data.bones

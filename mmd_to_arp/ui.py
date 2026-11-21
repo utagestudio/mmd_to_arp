@@ -46,6 +46,7 @@ class MMDARP_PT_main(bpy.types.Panel):
         row = layout.row(align=True)
         row.label(text='Legs')
         row.prop(settings, 'leg_ik_fk', expand=True)
+        layout.prop(settings, 'orphan_shape')
 
         box = layout.box()
         if settings.detected_target == arm.name:
