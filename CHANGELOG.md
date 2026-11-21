@@ -5,6 +5,12 @@ English | [日本語](CHANGELOG.ja.md)
 All notable changes to MMD to Auto-Rig Pro are listed here.
 The version format is `<major>.<minor>.<fix>`.
 
+## Unreleased
+
+### Fixed
+- Convert: on models whose thigh deforms through helper bones (a thigh twist bone moved by append from an IK helper), the thigh bent in its middle. These helper bones now follow the thigh.
+- Bake Motion: bones moved by MMD append or IK (eyes following 両目, leg helpers...) moved twice as much. They now use the VMD keys.
+
 ## [0.5.0] - 2026-11-22
 
 ### Added

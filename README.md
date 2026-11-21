@@ -112,6 +112,8 @@ Quick Rig does not copy the constraints of the bones that are not mapped. The MM
 
 - **IK**: Re-creates the IK of helper bones that follow the arms, such as sleeves.
 - **Append**: Re-creates append, such as the eyes following the "両目" bone, highlights and "肩C". It uses the same mechanism as mmd_tools.
+  - Thigh helper bones that take the thigh swing through an IK helper and append (such as 膝捩) work too: both the IK and the append are re-created.
+- **Motion**: When a motion is baked, the bones moved by IK or append get the original VMD keys. The baked final pose already includes the IK and append, so it would apply them twice.
 
 ### Preserve
 
