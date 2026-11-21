@@ -62,7 +62,8 @@ def run_post_fix(src, rig, preserve):
         released, muted = fix_preserve.fix(src, rig)
         return 'released %d bones to MMD append / IK, muted %d MMD IK' % (len(released), len(muted))
     created, _skipped = fix_convert.fix(rig, src)
-    return 're-created %d MMD IK' % len(created)
+    restored = fix_convert.fix_append(rig, src)
+    return 're-created %d MMD IK, restored %d MMD append' % (len(created), len(restored))
 
 
 def _detect(settings, arm):
@@ -167,7 +168,7 @@ detect the preset, run Quick Rig "Make Rig!" and the MMD post-fix"""
 
 class MMDARP_OT_post_fix(bpy.types.Operator):
     """Run the MMD post-fix on a rig generated with Quick Rig's own "Make Rig!".
-Convert: re-create MMD IK of helper bones. Preserve: hand append / IK driven bones
+Convert: re-create MMD IK and append (eyes following 両目...) of helper bones. Preserve: hand append / IK driven bones
 back to MMD"""
     bl_idname = 'mmd_to_arp.post_fix'
     bl_label = 'Run Post-Fix'
