@@ -12,6 +12,8 @@ __pycache__/
 # Build outputs
 dist/
 *.zip
+# ...except the release zips of the site's extension repository
+!site/public/repository/*.zip
 
 # Personal Claude Code instructions
 CLAUDE.local.md
