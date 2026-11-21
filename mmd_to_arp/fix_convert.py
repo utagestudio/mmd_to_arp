@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Run after Quick Rig "Make Rig!" in Convert mode with an MMD_* preset.
 
 Quick Rig (Convert) does not copy the constraints of orphan bones, so helper bones
@@ -9,7 +10,8 @@ This script re-creates the MMD IK constraints on the converted rig when:
   - every bone of the IK chain is an orphan bone (no ARP bone is affected).
 IK on mapped bones (足ＩＫ on ひざ...) is skipped: ARP drives those bones.
 
-Usage: select the ARP rig, open this file in the Text Editor and Run Script.
+Used by the addon; also runs standalone: select the ARP rig, open this file in
+the Text Editor and Run Script.
 It is safe to run several times (existing re-created IK is not duplicated).
 """
 import bpy

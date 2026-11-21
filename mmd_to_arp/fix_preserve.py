@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Run after Quick Rig "Make Rig!" in Preserve mode with an MMD_P_* preset.
 
 Quick Rig (Preserve) constrains *every* bone of the source skeleton to the ARP rig,
@@ -12,8 +13,8 @@ hair IK reaching 頭...), since ARP now drives those bones.
 Bones hanging under mapped bones without any MMD mechanism (hair, skirt...) keep
 their Quick Rig constraints, so they can still be posed with the ARP controllers.
 
-Usage: select the ARP rig or the MMD armature, open this file in the Text Editor
-and Run Script. It is safe to run several times.
+Used by the addon; also runs standalone: select the ARP rig or the MMD armature,
+open this file in the Text Editor and Run Script. It is safe to run several times.
 """
 import bpy
 

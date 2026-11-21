@@ -1,0 +1,16 @@
+schema_version = "1.0.0"
+
+id = "mmd_to_arp"
+version = "0.1.0"
+name = "MMD to Auto-Rig Pro"
+tagline = "Rig MMD models with Auto-Rig Pro through Quick Rig"
+maintainer = "utagestudio"
+type = "add-on"
+
+tags = ["Rigging", "Animation"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
