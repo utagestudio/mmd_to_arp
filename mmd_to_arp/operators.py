@@ -167,7 +167,7 @@ detect the preset, run Quick Rig "Make Rig!" and the MMD post-fix"""
             name = resolve_preset(settings, arm)
             skipped = quickrig.apply_mapping(context.scene, arm, mapping.get_preset(name))
             preserve = settings.mode == 'PRESERVE'
-            options = {}
+            options = {'arm_ik_fk': settings.arm_ik_fk, 'leg_ik_fk': settings.leg_ik_fk}
             if preserve and not name.startswith('MMD_P_'):
                 # Convert presets swap arm twist weights through weight overrides
                 options['constrain_overrides'] = True

@@ -40,6 +40,12 @@ class MMDARP_PT_main(bpy.types.Panel):
         layout.label(text=arm.name, icon='ARMATURE_DATA')
         layout.row().prop(settings, 'mode', expand=True)
         layout.prop(settings, 'preset')
+        row = layout.row(align=True)
+        row.label(text='Arms')
+        row.prop(settings, 'arm_ik_fk', expand=True)
+        row = layout.row(align=True)
+        row.label(text='Legs')
+        row.prop(settings, 'leg_ik_fk', expand=True)
 
         box = layout.box()
         if settings.detected_target == arm.name:
