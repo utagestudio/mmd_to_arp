@@ -169,11 +169,13 @@ detect the preset, run Quick Rig "Make Rig!" and the MMD post-fix"""
             skipped = quickrig.apply_mapping(context.scene, arm, mapping.get_preset(name))
             quickrig.fix_elbow_direction(context.scene, arm)
             preserve = settings.mode == 'PRESERVE'
-            options = {'arm_ik_fk': settings.arm_ik_fk, 'leg_ik_fk': settings.leg_ik_fk}
+            options = {'arm_ik_fk': settings.arm_ik_fk, 'leg_ik_fk': settings.leg_ik_fk,
+                       'orphan_bones_shape': quickrig.quickrig_orphan_shape(settings.orphan_shape)}
             if preserve and not name.startswith('MMD_P_'):
                 # Convert presets swap arm twist weights through weight overrides
                 options['constrain_overrides'] = True
             rig = quickrig.make_rig(context, arm, 'PRESERVE' if preserve else 'CONVERT', **options)
+            quickrig.set_orphan_shape(rig, settings.orphan_shape)
             fix_msg = run_post_fix(arm, rig, preserve)
         except RuntimeError as e:
             self.report({'ERROR'}, str(e))
