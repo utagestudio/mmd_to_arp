@@ -24,7 +24,7 @@ MMD モデルを Auto-Rig Pro のリグに変換する Blender アドオンで�
 
 ## インストール
 
-1. 配布ページから zip ファイル（`mmd_to_arp-<バージョン>.zip`）をダウンロードします。
+1. [Releases](https://github.com/utagestudio/mmd_to_arp/releases) から zip ファイル（`mmd_to_arp-<バージョン>.zip`）をダウンロードします。zip は解凍しないでください。
 2. Blender で「編集 > プリファレンス」を開き、「Get Extensions」を選びます。
 3. 右上のメニューから「Install from Disk」を選び、zip ファイルを選びます。
    - zip ファイルを Blender の画面にドラッグ＆ドロップしても、インストールできます。
@@ -186,6 +186,7 @@ Quick Rig は、元の骨格のすべてのボーンを Auto-Rig Pro に拘束�
 
 GPL-3.0-or-later です。全文は [LICENSE](LICENSE) を参照してください。
 
+- 不具合の報告や質問は [GitHub Issues](https://github.com/utagestudio/mmd_to_arp/issues) にお願いします。
 - 各バージョンの変更点は [CHANGELOG.ja.md](CHANGELOG.ja.md) を参照してください。
 - 不具合の報告や開発への参加については [CONTRIBUTING.md](CONTRIBUTING.md#日本語) を参照してください。
 - 開発者向けの情報は [DEVELOPMENT.md](DEVELOPMENT.md) にあります。

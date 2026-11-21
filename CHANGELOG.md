@@ -5,7 +5,7 @@ English | [日本語](CHANGELOG.ja.md)
 All notable changes to MMD to Auto-Rig Pro are listed here.
 The version format is `<major>.<minor>.<fix>`.
 
-## 0.5.0 - 2026-11-22
+## [0.5.0] - 2026-11-22
 
 ### Added
 - The panel shows a small note when the installed Auto-Rig Pro or Quick Rig version has not been tested with this add-on.
@@ -15,7 +15,7 @@ The version format is `<major>.<minor>.<fix>`.
 - Blender 4.5 or later is required (tested with 4.5 and 5.3).
 - The README is now available in English (README.md) and Japanese (README.ja.md).
 
-## 0.4.0 - 2026-11-21
+## [0.4.0] - 2026-11-21
 
 ### Added
 - **Bake Motion**: when the MMD armature has a motion (VMD), Convert bakes it to the FK controls of the arms and legs.
@@ -28,12 +28,12 @@ The version format is `<major>.<minor>.<fix>`.
 ### Fixed
 - Baking an animation from Convert failed with an error in Quick Rig.
 
-## 0.3.0 - 2026-11-21
+## [0.3.0] - 2026-11-21
 
 ### Added
 - **Other Bones** option: the controller shape of the bones that are not mapped (hair, skirts, accessories...). The new default, **Line**, draws a line along each bone. **Sphere** and **Box** are the Quick Rig shapes.
 
-## 0.2.0 - 2026-11-21
+## [0.2.0] - 2026-11-21
 
 ### Added
 - **IK / FK** panel: switch each arm and leg between IK and FK while keeping the pose (same as Auto-Rig Pro's "Snap IK-FK").
@@ -43,7 +43,7 @@ The version format is `<major>.<minor>.<fix>`.
 ### Fixed
 - In IK, the arms of some models bent the wrong way. Arms that are almost straight in the rest pose now get the elbow pointed backward.
 
-## 0.1.0 - 2026-11-21
+## [0.1.0] - 2026-11-21
 
 ### Added
 - First release.
@@ -52,3 +52,9 @@ The version format is `<major>.<minor>.<fix>`.
 - Convert post-fix: re-creates the MMD IK of helper bones.
 - Preserve post-fix: hands helper bones driven by append or IK back to MMD.
 - Quick Rig preset files that can be used without the add-on.
+
+[0.5.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/utagestudio/mmd_to_arp/releases/tag/v0.1.0

@@ -5,7 +5,7 @@
 MMD to Auto-Rig Pro の主な変更点です。
 バージョンの形式は `<major>.<minor>.<fix>` です。
 
-## 0.5.0 - 2026-11-22
+## [0.5.0] - 2026-11-22
 
 ### 追加
 - インストールされている Auto-Rig Pro または Quick Rig が、動作確認していないバージョンのとき、パネルに小さく注意を表示するようにしました。
@@ -15,7 +15,7 @@ MMD to Auto-Rig Pro の主な変更点です。
 - Blender 4.5 以降が必要になりました。4.5 と 5.3 で動作を確認しています。
 - README を英語版（README.md）と日本語版（README.ja.md）に分けました。
 
-## 0.4.0 - 2026-11-21
+## [0.4.0] - 2026-11-21
 
 ### 追加
 - **Bake Motion**：MMD のアーマチュアにモーション（VMD）があるとき、Convert でモーションを腕と脚の FK コントローラーに焼き込みます。
@@ -28,12 +28,12 @@ MMD to Auto-Rig Pro の主な変更点です。
 ### 修正
 - Convert でモーションを焼き込むと、Quick Rig でエラーになる問題を修正しました。
 
-## 0.3.0 - 2026-11-21
+## [0.3.0] - 2026-11-21
 
 ### 追加
 - **Other Bones**：割り当てていないボーン（髪、スカート、アクセサリーなど）のコントローラーの形を選べるようにしました。新しい既定値の **Line** は、ボーンに沿った線です。**Sphere** と **Box** は Quick Rig 標準の形です。
 
-## 0.2.0 - 2026-11-21
+## [0.2.0] - 2026-11-21
 
 ### 追加
 - **IK / FK** パネル：腕と脚ごとに、ポーズを保ったまま IK と FK を切り替えられます。Auto-Rig Pro の「Snap IK-FK」と同じ処理です。
@@ -43,7 +43,7 @@ MMD to Auto-Rig Pro の主な変更点です。
 ### 修正
 - 一部のモデルで、IK にすると腕が逆向きに曲がる問題を修正しました。休止姿勢で腕がほぼまっすぐな場合に、肘が後ろを向くように設定します。
 
-## 0.1.0 - 2026-11-21
+## [0.1.0] - 2026-11-21
 
 ### 追加
 - 最初のリリースです。
@@ -52,3 +52,9 @@ MMD to Auto-Rig Pro の主な変更点です。
 - Convert の修正：補助ボーンの MMD の IK を作り直します。
 - Preserve の修正：付与や IK で動く補助ボーンを、MMD の仕組みで動くように戻します。
 - アドオンを使わずに使える、Quick Rig のプリセットファイル。
+
+[0.5.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/utagestudio/mmd_to_arp/releases/tag/v0.1.0
