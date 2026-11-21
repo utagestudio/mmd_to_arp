@@ -5,6 +5,7 @@ Only Quick Rig's scene data (scene.limb_map) and its "Make Rig!" operator are us
 The operator is executed without its dialog, so the preparation that Quick Rig
 does in invoke() (base armature, Auto-Rig Pro version) is reproduced here.
 """
+import functools
 import sys
 
 import addon_utils
@@ -35,6 +36,38 @@ def arp_version():
                 v = mod.bl_info['version']
                 return int('%d%d%d' % (v[0], v[1], v[2])), 'Light' in mod.bl_info['name']
     return None, False
+
+
+# (major, minor) range of the dependency versions this add-on was tested with. Other
+# versions may work, the panel only shows a small warning: the add-on uses internals
+# of Quick Rig and of Auto-Rig Pro's snap functions, which may change.
+TESTED_VERSIONS = {
+    'Auto-Rig Pro': ((3, 79), (3, 79)),
+    'Auto-Rig Pro: Quick Rig': ((1, 28), (1, 28)),
+}
+
+
+def addon_version(name):
+    """Version tuple of the enabled add-on / extension named `name`, or None."""
+    for mod in addon_utils.modules():
+        if mod.bl_info.get('name') == name and addon_utils.check(mod.__name__)[1]:
+            return tuple(mod.bl_info.get('version', ()))
+    return None
+
+
+@functools.lru_cache(maxsize=1)  # add-on updates need a Blender restart anyway
+def untested_versions():
+    """[(name, installed 'x.y.z', tested 'x.y' or 'x.y-x.y')] for the enabled
+    dependencies whose version is outside TESTED_VERSIONS."""
+    out = []
+    for name, (lo, hi) in TESTED_VERSIONS.items():
+        v = addon_version(name)
+        if not v or len(v) < 2:
+            continue
+        if not lo <= tuple(v[:2]) <= hi:
+            tested = '%d.%d' % lo if lo == hi else '%d.%d-%d.%d' % (lo + hi)
+            out.append((name, '.'.join(str(x) for x in v), tested))
+    return tuple(out)
 
 
 def mmd_tools_enabled():
