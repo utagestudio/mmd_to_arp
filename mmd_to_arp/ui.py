@@ -28,6 +28,11 @@ class MMDARP_PT_main(bpy.types.Panel):
             for m in missing:
                 box.label(text=m, icon='BLANK1')
             return
+        for name, installed, tested in quickrig.untested_versions():
+            col = layout.column(align=True)
+            col.scale_y = 0.8
+            col.label(text='%s %s: untested' % (name, installed), icon='INFO')
+            col.label(text='(tested with %s)' % tested, icon='BLANK1')
 
         settings = context.scene.mmd_to_arp
         arm = find_mmd_armature(context.active_object)

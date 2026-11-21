@@ -1,114 +1,155 @@
 # MMD to Auto-Rig Pro
 
-mmd_tools で読み込んだ MMD モデル（PMX / PMD）を、[Auto-Rig Pro](https://lucky3d.fr/auto-rig-pro/) のリグに変換する Blender アドオンです。変換そのものは Auto-Rig Pro: Quick Rig が行い、このアドオンはモデルの骨格に合ったマッピングの選択と、MMD 特有の仕組み（付与・IK で動く補助ボーン）の後処理を自動化します。
+English | [日本語](README.ja.md)
 
-Blender add-on that turns MMD models imported with mmd_tools into Auto-Rig Pro rigs, by driving Auto-Rig Pro: Quick Rig with skeleton-specific limb mappings and fixing up MMD helper bones afterwards.
+A Blender add-on that converts MMD models into Auto-Rig Pro rigs.
 
-- 配布されている MMD モデル 241 体（PMX / PMD）のボーン構造を解析し、構造パターンごとに代表 36 体で変換を検証しています
-- アドオンを使わずに、Quick Rig のプリセットファイルとして使うこともできます（[後述](#アドオンを使わない場合)）
+- It works on MMD models (PMX / PMD) imported with mmd_tools.
+- Auto-Rig Pro: Quick Rig does the conversion itself.
+- This add-on picks the limb mapping that fits the skeleton of the model.
+- After the conversion, it also fixes the MMD-specific mechanisms: helper bones driven by "append" (付与) or by IK.
+- The bone structures of 241 distributed models were analyzed. For each structure pattern, the conversion was checked on 36 representative models.
 
-## 必要なもの
+## Requirements
 
-| | 動作確認バージョン |
+| Software | Tested version |
 |---|---|
-| Blender 4.2 以降 | 5.3 |
-| [mmd_tools](https://extensions.blender.org/add-ons/mmd-tools/) | 拡張機能版 |
-| Auto-Rig Pro（有償） | 3.79.22 |
-| Auto-Rig Pro: Quick Rig（有償） | 1.28.39 |
+| Blender 4.5 or later | 4.5, 5.3 |
+| [mmd_tools](https://extensions.blender.org/add-ons/mmd-tools/) | Extension version |
+| [Auto-Rig Pro](https://lucky3d.fr/auto-rig-pro/) (paid) | 3.79 |
+| Auto-Rig Pro: Quick Rig (paid) | 1.28 |
 
-このアドオンは上記 3 つがインストール・有効化されている前提で動作します。
+- Install and enable the three add-ons above.
+- Other versions of Auto-Rig Pro and Quick Rig may also work. In that case, the panel shows a small note.
 
-## インストール
+## Installation
 
-1. 拡張機能の zip（`mmd_to_arp-<version>.zip`）を用意します。リポジトリから作る場合は `tools/build_extension.sh` を実行すると `dist/` に作成されます
-2. Blender の「編集 > プリファレンス > 拡張機能」右上のメニューから「ディスクからインストール」で zip を選びます（zip を Blender にドラッグ＆ドロップしても構いません）
+1. Download the zip file (`mmd_to_arp-<version>.zip`) from the distribution page.
+2. In Blender, open "Edit > Preferences > Get Extensions".
+3. In the menu at the top right, choose "Install from Disk" and select the zip file.
+   - You can also drag and drop the zip file onto the Blender window.
 
-## 使い方
+## Usage
 
-1. mmd_tools で PMX / PMD をインポートします
-   - **「ボーン名の変換（Rename Bones - L / R Suffix）」は ON のまま**にしてください（既定値）。`左腕` → `腕.L` 形式の名前を前提にしています
-   - 「Use Underscore」や辞書による英訳は使わないでください
-2. モデル（ルート・アーマチュア・メッシュのどれでも可）を選択し、3D ビューのサイドバー「**MMD ARP**」タブを開きます
-3. **Mode** を選びます（下表）。迷ったら Convert で構いません
-4. 「**Detect Preset**」で判定結果と注意事項を確認します（省略可）
-5. 「**Convert to Auto-Rig Pro**」を押します。マッピングの設定、Quick Rig の Make Rig!、後処理までをまとめて実行します
+1. Import a PMX / PMD file with mmd_tools.
+   - Keep "Rename Bones - L / R Suffix" enabled. This is the default.
+   - Do not use "Use Underscore" or the dictionary translation to English.
+2. Select the model. The root, the armature or a mesh are all fine.
+3. Open the "**MMD ARP**" tab in the sidebar of the 3D Viewport.
+4. Choose the **Mode**. If you are not sure, choose Convert.
+5. Press "**Detect Preset**" to see the detected preset and notes. This step is optional.
+6. Press "**Convert to Auto-Rig Pro**". It sets the mapping, runs Quick Rig's Make Rig, and fixes the result.
 
-| Mode | 内容 | 向いている用途 |
+### Mode
+
+| Mode | What it does | Use it when |
 |---|---|---|
-| Convert | MMD の骨格を ARP に置き換え、ウェイトを ARP のボーンに載せ替える | ARP の機能をフルに使う（ゲームエンジンへの書き出し、リターゲットなど） |
-| Preserve | MMD の骨格・付与・補助ボーンを残し、MMD の操作用ボーンだけを ARP で動かす（VMD と同じ考え方） | 補助ボーンの多いモデルを、元の変形のまま ARP で動かす |
+| Convert | Replaces the MMD skeleton with the Auto-Rig Pro skeleton. The weights move to the Auto-Rig Pro bones. | You want all Auto-Rig Pro features, such as export to game engines or retargeting. |
+| Preserve | Keeps the MMD skeleton, append and helper bones. Auto-Rig Pro only drives the MMD operation bones, like a VMD motion does. | The model has many helper bones and you want its original deformation. |
 
-**Preset** を「Auto」以外にすると、判定を使わずに指定したマッピングで変換します。
+### Options
 
-**Arms / Legs** で、生成するリグの腕・脚を IK と FK のどちらで始めるかを選べます（既定は Quick Rig と同じく腕 FK・脚 IK）。
+- **Preset**: When set to anything other than "Auto", the chosen mapping is used instead of the detected one.
+- **Arms / Legs**: Whether the arms and legs of the generated rig start in IK or FK. The default is the same as Quick Rig: arms in FK, legs in IK.
+- **Other Bones**: The controller shape of the bones other than the arms, legs and body, such as hair, skirts and accessories.
+  - **Line** (default): A line along each bone. It shows how the bones are connected.
+  - **Sphere** / **Box**: The standard sphere and box of Quick Rig.
+- **Bake Motion**: Shown when the MMD armature has a motion (VMD).
+  - The motion is baked to the FK controls of the arms and legs.
+  - The IK-FK switches are not keyed. You can switch to IK anywhere in the motion.
 
-**Other Bones** は、腕・脚・体幹以外の MMD ボーン（髪、スカート、アクセサリーなど）のコントローラーの形です。既定の **Line** はボーンに沿った線で、ボーンの並びが分かります。**Sphere** / **Box** は Quick Rig 標準の球・箱です。
+## Switching IK / FK
 
-**Bake Motion** は、MMD アーマチュアにモーション（VMD）があるときに表示されます。モーションをリグの腕・脚の FK コントローラーに焼き込みます。IK-FK スイッチにはキーを打たないので、モーションの途中で IK / FK パネルから IK に切り替えられます。Quick Rig の Make Rig で焼き込んだ場合も、Run Post-Fix でスイッチのキーを撤去します。
+When you select the rig, the "**IK / FK**" panel appears in the sidebar. It also appears when you select a mesh deformed by the rig.
 
-### IK / FK の切り替え
+- Switch each arm and leg between IK and FK. "All" switches all of them at once.
+- You do not need to select any bone.
+- It works like the "Snap IK-FK" of Auto-Rig Pro. The pose is kept when switching.
+- When auto keying is on, keys are inserted.
 
-リグ（またはリグで変形するメッシュ）を選ぶと、サイドバーに「**IK / FK**」パネルが表示されます。腕・脚を左右ごと、または「All」でまとめて IK / FK に切り替えます。Auto-Rig Pro の「Snap IK-FK」と同じ処理なので、ポーズを保ったまま切り替わり、自動キー挿入が ON ならキーも打たれます。ボーンを選択する必要はありません。
+### Rigs with a baked motion
 
-焼き込んだモーションがある腕・脚を FK に戻すときはスナップせず、モーションどおりの動きに戻します。自動キー挿入が ON のときは、スイッチのキーを「一定」補間で打つので、キーとキーの間で IK と FK が混ざりません（例：フレーム 100 で IK、150 で FK にすると、100〜149 だけ IK になります。最初のキーより前もそのキーの値になるので、それより前を FK にしたいときは手前のフレームでも FK のキーを打ってください）。
+- Switch to IK to place a hand or a foot anywhere. The VMD motion no longer moves that arm or leg.
+- Switch back to FK to return to the VMD motion.
+- When auto keying is on, the IK-FK switch is keyed with constant interpolation. IK and FK are not blended between two keys.
+  - Example: switch to IK at frame 100 and back to FK at frame 150. Only frames 100 to 149 are in IK.
+  - Frames before the first key use the value of the first key. To keep the earlier frames in FK, also switch to FK at an earlier frame.
 
-FK の肘・膝は Z 軸まわりにしか曲がらないようにロックされています。ロックを外して他の軸で曲げたポーズは、IK では再現できないため、切り替えると腕の捩じれが変わります。
+### Note
 
-### 腕の IK の向き
+The FK elbows and knees are locked so that they bend only around the Z axis. A pose bent around another axis (with the locks removed) cannot be reproduced in IK. Switching changes the twist of the arm in that case.
 
-Quick Rig は、肘の IK ポールを腕ボーンのロールから決めます。そのため、休止姿勢で腕がほぼまっすぐ、または肘がわずかに前へ曲がっている MMD モデルでは、IK で腕が逆向きに曲がることがあります（代表 36 体中 7 体）。このアドオンは、肘がはっきり後ろへ曲がっていない腕に対して、Quick Rig の「Auto-Elbow Direction」（Force Straight Direction）を有効にして変換します。このとき肘の関節位置は肩と手首を結ぶ線上へ移動します（多くは数 mm、代表 36 体では最大約 1 cm）。
+## IK direction of the arms
 
-### 手順を分けて実行する
+Quick Rig places the IK pole of the elbow from the roll of the arm bone. Because of this, the arms of some MMD models bend the wrong way in IK. This happens when the arm is almost straight in the rest pose, or when the elbow is bent slightly forward.
 
-サイドバーの「Step by Step」から、各手順を個別に実行できます。
+This add-on finds the arms whose elbow is not clearly bent backward. For those arms, it enables Quick Rig's "Auto-Elbow Direction" (Force Straight Direction) before the conversion. The elbow joint then moves onto the line between the shoulder and the wrist. It usually moves a few millimeters. The largest move in the tested models was about 1 cm.
 
-1. **Load Mapping to Quick Rig**：マッピングを Quick Rig のリム一覧に読み込むだけ。Quick Rig の画面で内容を確認・修正できます
-2. Quick Rig の「Make Rig!」を実行
-3. 生成されたリグを選択して **Run Post-Fix**：Convert / Preserve は自動判別します
+## Running the steps separately
 
-### 後処理の内容
+The "Step by Step" section of the sidebar runs each step on its own.
 
-- **Convert**：Quick Rig はオーファンボーンのコンストレイントをコピーしないため、MMD の IK や付与で動くボーンが動かなくなります。次の 2 つを ARP リグ側に復元します
-  - **IK**：腕などを追いかける補助ボーン（袖など）。IK の持ち主とターゲットがリグに残っていて、チェーンに ARP のボーンを含まない MMD IK を再作成します
-  - **付与**：`両目` ボーンで両目を動かす仕組み、ハイライト、`肩C` など。付与の持ち主と付与親が両方ともリグに残っている（オーファンボーンになっている）ものを、mmd_tools と同じ仕組み（シャドウボーンと Transformation コンストレイント）で再設定します
-- **Preserve**：Quick Rig は元の骨格の全ボーンを ARP に拘束するため、D ボーンや捩じりボーンの付与が上書きされます。割り当てたボーンを含む MMD IK（足ＩＫ・つま先ＩＫ、頭まで届く髪 IK など）をミュートし、付与・IK で動くボーンとその子孫から Quick Rig の拘束を外して、モデル本来の仕組みで動かします。髪・スカートなど素直にぶら下がるボーンは ARP のコントローラーで動かせるまま残します
+1. **Load Mapping to Quick Rig**: Loads the mapping into Quick Rig. You can check and edit it in the Quick Rig panel.
+2. Run "Make Rig!" of Quick Rig.
+3. Select the generated rig and press **Run Post-Fix**. It detects whether the rig was made in Convert or Preserve mode.
 
-プリセットの一覧とマッピングの設計は [docs/presets.md](docs/presets.md) を参照してください。
+## What the post-fix does
 
-## 制限事項
+### Convert
 
-- 付与親が ARP に割り当てたボーン（腕・足など）の場合、Convert ではその**付与（他ボーンの回転コピー）**が失われ、補助ボーンは親ボーンに固定で追従するだけになります。`両目` のように付与親もオーファンボーンとして残る場合は復元されます。気になる場合は Preserve を使ってください。Make Rig の「Copy Constraints」は mmd_tools の内部ボーンを壊すので ON にしないでください
-- 補助ボーンを独自の仕組みで動かすモデルのうち、mmd_tools 単体でも補助ボーンの仕組みが再現されないモデルは、どちらのモードでも正しく変形しません（判定時に警告を表示します）
-- Preserve では割り当てボーンを含む MMD IK をミュートするため、髪 IK などは無効になります。髪は ARP のオーファンコントローラーで動かします
-- 腕捩が無い古いモデルは、Convert で上腕を捩じっても上腕部は捩じれません（曲げは問題ありません）
-- 髪・スカート・IK ボーンなど割り当てていないボーンは、Quick Rig のオーファンボーン（黄色い球のコントローラー）になります。物理演算（剛体）は再現されません
+Quick Rig does not copy the constraints of the bones that are not mapped. The MMD bones moved by IK or append stop moving. This add-on restores two things on the rig.
 
-## アドオンを使わない場合
+- **IK**: Re-creates the IK of helper bones that follow the arms, such as sleeves.
+- **Append**: Re-creates append, such as the eyes following the "両目" bone, highlights and "肩C". It uses the same mechanism as mmd_tools.
 
-`presets/` のファイルは、Quick Rig のプリセットとしてそのまま使えます。
+### Preserve
 
-1. `presets/*.py` を Quick Rig の Custom Presets Path（既定は `~/Documents/AutoRigPro/Quick Rig Presets/`）にコピーし、Blender を再起動します。「Import Preset」メニューに `Mmd_Std_D` などが表示されます
-2. 使うプリセットは、インポート直後に `mmd_to_arp/detect.py` をテキストエディタで開いて「Run Script」すると表示されます
-3. Convert 版（`MMD_*`）は Convert モード、Preserve 版（`MMD_P_*`）は Preserve モードで Make Rig! を実行します。Convert 版を Preserve モードで使う場合は「Constrain Overrides」を ON にしてください
-4. 生成されたリグを選択して、Convert なら `mmd_to_arp/fix_convert.py`、Preserve なら `mmd_to_arp/fix_preserve.py` をテキストエディタで「Run Script」します（Preserve では必須）
+Quick Rig constrains every bone of the original skeleton to Auto-Rig Pro. This overrides the append of the D bones and twist bones. This add-on fixes it as follows.
 
-プリセットは ASCII（`\uXXXX` エスケープ）で書き出しているので、日本語版 Windows でも文字化けしません。
+- Mutes the MMD IK that contains mapped bones, such as 足ＩＫ and つま先ＩＫ.
+- Removes the Quick Rig constraints from the bones moved by append or IK. These bones move by the original mechanism of the model.
+- Bones that simply hang, such as hair and skirts, stay controllable with Auto-Rig Pro controllers.
 
-## 開発
+### Both modes
 
-| パス | 内容 |
-|---|---|
-| `mmd_to_arp/` | アドオン本体（Blender 拡張機能）。`detect.py` / `fix_*.py` は単体スクリプトとしても動作 |
-| `presets/` | 生成済みの Quick Rig プリセット |
-| `docs/` | ドキュメント |
-| `tools/make_presets.py` | `mmd_to_arp/mapping.py` からプリセットファイルを生成 |
-| `tools/build_extension.sh` | 拡張機能 zip を `dist/` にビルド（`BLENDER=/path/to/blender` で Blender を指定） |
-| `tools/pmx_bones.py` | PMX / PMD のボーン名・親子・ウェイト合計を JSON に書き出す（構造調査用） |
-| `tests/blender/` | Blender 上での検証ハーネス（インポート → 変換 → ウェイト移行・追従・捩じり分布のチェック） |
-| `_local/` | コミットしないローカルデータ（MMD モデル、解析結果など） |
+For rigs with a baked motion, the keys of the IK-FK switches are removed. This also applies to motions baked with Quick Rig's own Make Rig.
 
-バージョンは `mmd_to_arp/blender_manifest.toml` で管理し、`<major>.<minor>.<fix>` の形式です。開発中は `-dev.<n>` を付けます。
+## Limitations
 
-## ライセンス
+- If the append parent is a bone mapped to Auto-Rig Pro, such as an arm or a leg, Convert loses that append. The helper bone only follows its parent bone. Use Preserve if this matters.
+- Do not enable "Copy Constraints" in Make Rig. It breaks the internal bones of mmd_tools.
+- Some models drive their helper bones with their own systems that mmd_tools itself cannot reproduce. These models do not deform correctly in either mode. A warning is shown when the preset is detected.
+- Preserve mutes the MMD IK that contains mapped bones. Hair IK and similar IK stop working. Move the hair with the Auto-Rig Pro controllers.
+- On old models without arm twist bones (腕捩), twisting the upper arm in Convert does not twist the upper arm mesh. Bending works.
+- Physics (rigid bodies and joints) are not reproduced.
 
-GPL-3.0-or-later
+## Using only the presets, without the add-on
+
+The files in the `presets/` folder are Quick Rig presets.
+
+1. Copy `presets/*.py` to the Quick Rig preset folder (Custom Presets Path) and restart Blender.
+   - The default folder is `~/Documents/AutoRigPro/Quick Rig Presets/`.
+2. To find the preset to use, run `mmd_to_arp/detect.py`. After importing the model, open the file in the Text Editor and press "Run Script".
+3. Run Make Rig in Convert mode with a Convert preset (`MMD_*`), or in Preserve mode with a Preserve preset (`MMD_P_*`).
+   - To use a Convert preset in Preserve mode, enable "Constrain Overrides".
+4. Select the generated rig, open the following file in the Text Editor and press "Run Script".
+   - Convert: `mmd_to_arp/fix_convert.py`
+   - Preserve: `mmd_to_arp/fix_preserve.py` (required)
+
+See [docs/presets.md](docs/presets.md) (in Japanese) for the list of presets and the mapping design.
+
+## Disclaimer
+
+- This add-on is an unofficial tool. It is not affiliated with or endorsed by:
+  - Artell, the developer of Auto-Rig Pro and Auto-Rig Pro: Quick Rig
+  - The developers of mmd_tools
+  - The author of MikuMikuDance
+  - The Blender Foundation
+- The rights to MMD models and motions belong to their authors. Follow the terms of use of each model and motion, including modification and use in other software.
+- The author is not liable for any damage caused by using this add-on.
+
+## License
+
+GPL-3.0-or-later. See [LICENSE](LICENSE) for the full text.
+
+Information for developers is in [DEVELOPMENT.md](DEVELOPMENT.md) (in Japanese).
