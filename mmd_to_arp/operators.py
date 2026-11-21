@@ -144,6 +144,7 @@ Use it to review or edit the mapping in Quick Rig before "Make Rig!\""""
             arm = find_mmd_armature(context.active_object)
             name = resolve_preset(context.scene.mmd_to_arp, arm)
             quickrig.apply_mapping(context.scene, arm, mapping.get_preset(name))
+            quickrig.fix_elbow_direction(context.scene, arm)
         except RuntimeError as e:
             self.report({'ERROR'}, str(e))
             return {'CANCELLED'}
@@ -166,6 +167,7 @@ detect the preset, run Quick Rig "Make Rig!" and the MMD post-fix"""
             arm = find_mmd_armature(context.active_object)
             name = resolve_preset(settings, arm)
             skipped = quickrig.apply_mapping(context.scene, arm, mapping.get_preset(name))
+            quickrig.fix_elbow_direction(context.scene, arm)
             preserve = settings.mode == 'PRESERVE'
             options = {'arm_ik_fk': settings.arm_ik_fk, 'leg_ik_fk': settings.leg_ik_fk}
             if preserve and not name.startswith('MMD_P_'):

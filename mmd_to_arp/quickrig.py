@@ -96,6 +96,45 @@ def apply_mapping(scene, armature, mapping):
     return skipped
 
 
+# An elbow bent backward by less than this (relative to the arm length) may get its IK
+# pole in front of the arm: Quick Rig places the pole from the arm bone roll, not from
+# the bend, so almost straight or forward bent MMD arms can bend backward in IK.
+ELBOW_BACK_MIN = 0.004
+
+
+def elbow_back_ratio(armature, limb):
+    """How far the elbow is bent backward (+Y, MMD models face -Y), relative to the arm
+    length. None if the arm bones are missing."""
+    bones = armature.data.bones
+    names = (limb.bone_02, limb.bone_04, limb.bone_06)
+    if not all(n and n in bones for n in names):
+        return None
+    mw = armature.matrix_world
+    sh, el, wr = (mw @ bones[n].head_local for n in names)
+    axis = wr - sh
+    if axis.length == 0:
+        return None
+    t = (el - sh).dot(axis) / axis.length_squared
+    offset = el - (sh + axis * t)
+    return offset.y / axis.length
+
+
+def fix_elbow_direction(scene, armature):
+    """Make Quick Rig point the elbow backward (Auto-Elbow, straight) on arms that are
+    not clearly bent backward. Returns the limb names changed."""
+    changed = []
+    for limb in scene.limb_map:
+        if limb.type != 'ARM':
+            continue
+        ratio = elbow_back_ratio(armature, limb)
+        if ratio is not None and ratio < ELBOW_BACK_MIN:
+            limb.auto_elbow = True
+            limb.auto_elbow_straight = True
+            limb.IK_axis_correc = 'Y'
+            changed.append(limb.name)
+    return changed
+
+
 def validate_mapping(scene, armature):
     """Required bones, as checked by Quick Rig before generating the rig."""
     bones = armature.data.bones
