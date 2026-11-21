@@ -44,6 +44,8 @@ Blender add-on that turns MMD models imported with mmd_tools into Auto-Rig Pro r
 
 **Other Bones** は、腕・脚・体幹以外の MMD ボーン（髪、スカート、アクセサリーなど）のコントローラーの形です。既定の **Line** はボーンに沿った線で、ボーンの並びが分かります。**Sphere** / **Box** は Quick Rig 標準の球・箱です。
 
+**Bake Motion** は、MMD アーマチュアにモーション（VMD）があるときに表示されます。モーションをリグの腕・脚の FK コントローラーに焼き込みます。IK-FK スイッチにはキーを打たないので、モーションの途中で IK / FK パネルから IK に切り替えられます。Quick Rig の Make Rig で焼き込んだ場合も、Run Post-Fix でスイッチのキーを撤去します。
+
 ### IK / FK の切り替え
 
 リグ（またはリグで変形するメッシュ）を選ぶと、サイドバーに「**IK / FK**」パネルが表示されます。腕・脚を左右ごと、または「All」でまとめて IK / FK に切り替えます。Auto-Rig Pro の「Snap IK-FK」と同じ処理なので、ポーズを保ったまま切り替わり、自動キー挿入が ON ならキーも打たれます。ボーンを選択する必要はありません。
