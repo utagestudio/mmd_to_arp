@@ -4,7 +4,7 @@ import textwrap
 import bpy
 
 from . import ikfk, quickrig
-from .operators import find_mmd_armature, find_rig, is_arp_rig
+from .operators import find_mmd_armature, find_rig, is_arp_rig, motion_action
 
 
 def _wrapped(layout, text, icon='NONE', width=42):
@@ -47,6 +47,11 @@ class MMDARP_PT_main(bpy.types.Panel):
         row.label(text='Legs')
         row.prop(settings, 'leg_ik_fk', expand=True)
         layout.prop(settings, 'orphan_shape')
+        action = motion_action(arm)
+        if action:
+            row = layout.row()
+            row.prop(settings, 'bake_motion')
+            row.label(text=action.name)
 
         box = layout.box()
         if settings.detected_target == arm.name:

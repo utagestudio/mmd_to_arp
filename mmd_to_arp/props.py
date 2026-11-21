@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Scene settings of the add-on (bpy.types.Scene.mmd_to_arp)."""
 import bpy
-from bpy.props import EnumProperty, PointerProperty, StringProperty
+from bpy.props import BoolProperty, EnumProperty, PointerProperty, StringProperty
 
 from . import mapping
 
@@ -44,6 +44,10 @@ class MMDARP_Settings(bpy.types.PropertyGroup):
                             description='IK-FK state of the arms in the generated rig')
     leg_ik_fk: EnumProperty(name='Legs', items=IKFK_ITEMS, default='IK',
                             description='IK-FK state of the legs in the generated rig')
+    bake_motion: BoolProperty(name='Bake Motion', default=True,
+                              description='Bake the motion (VMD) of the MMD armature to the '
+                                          'rig, on the FK controls of the arms and legs (the IK-FK '
+                                          'switches are not keyed: switch them anywhere)')
     orphan_shape: EnumProperty(name='Other Bones', items=ORPHAN_SHAPE_ITEMS, default='LINE',
                                description='Controller shape of the MMD bones that are not '
                                            'part of the arms, legs, spine... (hair, skirt, '

@@ -56,3 +56,43 @@ def switch(context, rig, limb, side, target):
         rig.pose.use_mirror_x = mirror
         view_layer.objects.active = active
     return True
+
+
+def _fcurve_collections(obj):
+    """The F-Curve collections of the action of `obj` (layered actions of Blender 4.4+
+    and legacy actions)."""
+    adt = obj.animation_data
+    act = adt.action if adt else None
+    if act is None:
+        return []
+    if getattr(act, 'layers', None):
+        slot = getattr(adt, 'action_slot', None)
+        out = []
+        for layer in act.layers:
+            for strip in layer.strips:
+                cb = strip.channelbag(slot) if slot else None
+                if cb:
+                    out.append(cb.fcurves)
+        return out
+    return [act.fcurves]
+
+
+def remove_switch_keys(rig):
+    """Remove the keys of the IK-FK switches (Quick Rig's animation bake keys them,
+    which prevents switching the limbs later in the motion). Each switch keeps the
+    value it has at the current frame. Returns the names of the controls changed."""
+    frame = bpy.context.scene.frame_current
+    changed = []
+    for fcurves in _fcurve_collections(rig):
+        for fc in list(fcurves):
+            if not fc.data_path.endswith('["ik_fk_switch"]'):
+                continue
+            value = fc.evaluate(frame)
+            name = fc.data_path.split('"')[1]
+            fcurves.remove(fc)
+            pb = rig.pose.bones.get(name)
+            if pb is not None:
+                pb['ik_fk_switch'] = value
+            changed.append(name)
+    return changed
+

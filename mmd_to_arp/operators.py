@@ -80,12 +80,22 @@ def is_preserve_result(src):
 
 
 def run_post_fix(src, rig, preserve):
+    # a baked animation keys the IK-FK switches: unkey them so the limbs can be switched
+    unkeyed = ikfk.remove_switch_keys(rig)
+    keys_msg = ', unkeyed %d IK-FK switches' % len(unkeyed) if unkeyed else ''
     if preserve:
         released, muted = fix_preserve.fix(src, rig)
-        return 'released %d bones to MMD append / IK, muted %d MMD IK' % (len(released), len(muted))
+        return ('released %d bones to MMD append / IK, muted %d MMD IK'
+                % (len(released), len(muted)) + keys_msg)
     created, _skipped = fix_convert.fix(rig, src)
     restored = fix_convert.fix_append(rig, src)
-    return 're-created %d MMD IK, restored %d MMD append' % (len(created), len(restored))
+    return 're-created %d MMD IK, restored %d MMD append' % (len(created), len(restored)) + keys_msg
+
+
+def motion_action(arm):
+    """The action (VMD motion) of the MMD armature, or None."""
+    adt = arm.animation_data if arm else None
+    return adt.action if adt else None
 
 
 def _detect(settings, arm):
@@ -169,14 +179,22 @@ detect the preset, run Quick Rig "Make Rig!" and the MMD post-fix"""
             skipped = quickrig.apply_mapping(context.scene, arm, mapping.get_preset(name))
             quickrig.fix_elbow_direction(context.scene, arm)
             preserve = settings.mode == 'PRESERVE'
+            action = motion_action(arm) if settings.bake_motion else None
             options = {'arm_ik_fk': settings.arm_ik_fk, 'leg_ik_fk': settings.leg_ik_fk,
                        'orphan_bones_shape': quickrig.quickrig_orphan_shape(settings.orphan_shape)}
+            if action:
+                # retarget to the FK controls: the IK poles would not follow the MMD
+                # knees / elbows. The limbs can be switched to IK anywhere afterwards
+                # (the post-fix unkeys the IK-FK switches).
+                options.update(animation='ANIM_BAKE', arm_ik_fk='FK', leg_ik_fk='FK')
             if preserve and not name.startswith('MMD_P_'):
                 # Convert presets swap arm twist weights through weight overrides
                 options['constrain_overrides'] = True
             rig = quickrig.make_rig(context, arm, 'PRESERVE' if preserve else 'CONVERT', **options)
             quickrig.set_orphan_shape(rig, settings.orphan_shape)
             fix_msg = run_post_fix(arm, rig, preserve)
+            if action:
+                fix_msg += ', baked motion %s (arms and legs in FK)' % action.name
         except RuntimeError as e:
             self.report({'ERROR'}, str(e))
             return {'CANCELLED'}
