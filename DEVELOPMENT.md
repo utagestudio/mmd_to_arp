@@ -13,6 +13,10 @@
 | `tools/build_extension.sh` | 拡張機能の zip を `dist/` にビルドします |
 | `tools/pmx_bones.py` | PMX / PMD のボーン名・親子・ウェイト合計を JSON に書き出します（構造調査用） |
 | `tests/blender/` | Blender 上での検証ハーネス（インポート → 変換 → ウェイト移行・追従・捩じり分布のチェック） |
+| `CHANGELOG.md` / `CHANGELOG.ja.md` | 利用者向けの変更履歴（英語・日本語） |
+| `CONTRIBUTING.md` | 不具合の報告・PR の案内（GitHub が Issue や PR の画面にリンクを表示します） |
+| `CLAUDE.md` | AI コーディングアシスタント向けのプロジェクトのルール。個人用の `CLAUDE.local.md` はコミットしません |
+| `.github/ISSUE_TEMPLATE/` | Issue のフォーム（不具合の報告、機能の要望） |
 | `_local/` | コミットしないローカルデータ（MMD モデル、モーション、解析結果など）。`.gitignore` で除外しています |
 
 ## 開発環境
@@ -56,6 +60,18 @@ python3 tools/make_presets.py presets
   - 機能の追加は minor、修正は fix を上げ、`-dev.1` を付けます。
   - アドオンの動作が変わるコミットごとに、dev の番号を 1 つ上げます。ドキュメントやテストだけのコミットでは上げません。
 - リリース時は `-dev` を外してコミットし、main にマージして `v<version>` のタグを付けます。
+
+## リリースの手順
+
+1. リリースするブランチで、`mmd_to_arp/blender_manifest.toml` の `-dev.<n>` を外してコミットします（コミットメッセージは `Release <version>`）。
+2. `CHANGELOG.md` と `CHANGELOG.ja.md` に、利用者向けの変更点を追記します。
+3. main にマージし（`--no-ff`）、`v<version>` のタグを付けます。
+4. `tools/build_extension.sh` で zip を作ります。中身（manifest、LICENSE、`.py`）を確認します。
+5. 配布先を更新します。
+   - GitHub Releases：タグからリリースを作り、zip を添付し、CHANGELOG の該当部分を貼ります。
+   - BOOTH：zip を差し替え、商品ページの更新履歴を更新します。
+   - 独自サイト：バージョン、zip のリンク、拡張機能リポジトリ（`index.json`）を更新します。
+6. 公開する文章（CHANGELOG、リリースノート、商品ページ）に、モデル名が入っていないことを確認します。
 
 ## 対応バージョンの更新
 
