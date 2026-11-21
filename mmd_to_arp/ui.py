@@ -3,8 +3,8 @@ import textwrap
 
 import bpy
 
-from . import quickrig
-from .operators import find_mmd_armature, is_arp_rig
+from . import ikfk, quickrig
+from .operators import find_mmd_armature, find_rig, is_arp_rig
 
 
 def _wrapped(layout, text, icon='NONE', width=42):
@@ -79,7 +79,50 @@ class MMDARP_PT_advanced(bpy.types.Panel):
         col.operator('mmd_to_arp.post_fix', icon='MODIFIER')
 
 
-classes = (MMDARP_PT_main, MMDARP_PT_advanced)
+class MMDARP_PT_ikfk(bpy.types.Panel):
+    bl_label = 'IK / FK'
+    bl_idname = 'MMDARP_PT_ikfk'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'MMD ARP'
+
+    @classmethod
+    def poll(cls, context):
+        return find_rig(context.active_object) is not None
+
+    @staticmethod
+    def _buttons(layout, states, limb, side):
+        row = layout.row(align=True)
+        for target in ('IK', 'FK'):
+            op = row.operator('mmd_to_arp.switch_ikfk', text=target,
+                              depress=bool(states) and all(s == target for s in states))
+            op.limb, op.side, op.target = limb, side, target
+
+    def draw(self, context):
+        rig = find_rig(context.active_object)
+        layout = self.layout
+        layout.label(text=rig.name, icon='OUTLINER_OB_ARMATURE')
+        col = layout.column(align=True)
+        everything = []
+        for limb, label in (('ARM', 'Arm'), ('LEG', 'Leg')):
+            for side in ikfk.SIDES:
+                st = ikfk.state(rig, limb, side)
+                if st is None:
+                    continue
+                everything.append(st)
+                split = col.split(factor=0.35, align=True)
+                split.label(text='%s %s' % (label, side[1].upper()))
+                self._buttons(split, [st], limb, side)
+        if everything:
+            col.separator()
+            split = col.split(factor=0.35, align=True)
+            split.label(text='All')
+            self._buttons(split, everything, 'ALL', 'BOTH')
+        else:
+            layout.label(text='No IK-FK limbs', icon='INFO')
+
+
+classes = (MMDARP_PT_main, MMDARP_PT_advanced, MMDARP_PT_ikfk)
 
 
 def register():
