@@ -15,7 +15,9 @@ This script, on the converted rig:
   - restores append when the owner and the append target both exist in the rig as
     orphan bones, using mmd_tools' own implementation (shadow bones + Transformation
     constraints). Append on mapped bones (腕捩1 <- 腕捩...) is skipped, and so is append
-    from bones moved by MMD IK.
+    from bones moved by MMD IK that could not be re-created.
+  - after a motion bake, gives the bones driven by these mechanisms their VMD keys back
+    (the bake keyed their final pose, which would apply the mechanism twice).
 
 Used by the addon; also runs standalone: select the ARP rig, open this file in
 the Text Editor and Run Script.
@@ -104,10 +106,13 @@ def _mmd_fnbone():
     return None
 
 
-def _ik_chain_bones(arm):
-    """Names of the bones moved by enabled IK constraints of `arm`."""
+def _ik_chain_bones(arm, skip=()):
+    """Names of the bones moved by enabled IK constraints of `arm`, except the IK of the
+    owners in `skip`."""
     names = set()
     for pb in arm.pose.bones:
+        if pb.name in skip:
+            continue
         for c in pb.constraints:
             if c.type != 'IK' or c.mute or c.influence == 0 or not c.subtarget:
                 continue
@@ -134,9 +139,13 @@ def fix_append(rig, src):
         target = mb.additional_transform_bone
         if target and spb.name in rig.pose.bones and target in rig.pose.bones:
             pairs[spb.name] = target
-    # a target moved by MMD IK (even re-created, it solves against ARP bones) or by an
-    # append that is not restored moves differently in the rig: skip such appends
-    lost = _ik_chain_bones(src)
+    # a target moved by an MMD IK that is not re-created on the rig, or by an append that
+    # is not restored, moves differently in the rig: skip such appends. IK re-created by
+    # fix() (owner, chain and target all orphan bones) moves like in MMD, e.g. helper
+    # bones that extract the thigh swing for the thigh twist / deform bones.
+    recreated = {pb.name for pb in rig.pose.bones
+                 if any(c.type == 'IK' and c.name == CNS_NAME for c in pb.constraints)}
+    lost = _ik_chain_bones(src, skip=recreated)
     lost |= {b.name for b in src.pose.bones if not b.is_mmd_shadow_bone and b.name not in pairs
              and (b.mmd_bone.has_additional_rotation or b.mmd_bone.has_additional_location)
              and b.mmd_bone.additional_transform_bone}
@@ -164,6 +173,77 @@ def fix_append(rig, src):
         fn.setup_special_bone_collections(rig)
         fn.apply_additional_transformation(rig)
     return restored
+
+
+def _action_fcurves(obj):
+    """F-Curve collections of the action of `obj` (layered and legacy actions)."""
+    adt = obj.animation_data
+    act = adt.action if adt else None
+    if act is None:
+        return []
+    if getattr(act, 'layers', None):
+        slot = getattr(adt, 'action_slot', None)
+        return [cb.fcurves for layer in act.layers for strip in layer.strips
+                for cb in [strip.channelbag(slot) if slot else None] if cb]
+    return [act.fcurves]
+
+
+def _driven_bones(rig):
+    """Orphan bones of the rig moved by re-created MMD constraints: append owners and
+    their shadow / dummy bones, IK owners and the rest of their IK chains."""
+    names = set()
+    for pb in rig.pose.bones:
+        if pb.is_mmd_shadow_bone or pb.name.startswith(('_dummy_', '_shadow_')):
+            names.add(pb.name)
+        for c in pb.constraints:
+            if c.name in ('mmd_additional_rotation', 'mmd_additional_location'):
+                names.add(pb.name)
+            elif c.type == 'IK' and c.name == CNS_NAME:
+                b = pb if c.use_tail else pb.parent
+                for _ in range(c.chain_count or 255):
+                    if b is None:
+                        break
+                    names.add(b.name)
+                    b = b.parent
+    return names
+
+
+def restore_driven_motion(rig, src):
+    """After a motion bake: Quick Rig bakes the final pose of the orphan bones, which
+    already includes the effect of MMD append / IK. With those mechanisms restored on
+    the rig the effect would apply twice, so the keys of the driven bones are replaced
+    by the keys of the MMD armature (the VMD motion itself). Returns the bone names."""
+    rig_cols = _action_fcurves(rig)
+    if not rig_cols:
+        return []
+    src_fcs = [fc for col in _action_fcurves(src) for fc in col]
+    driven = {n for n in _driven_bones(rig) if n in src.pose.bones}
+    if not driven:
+        return []
+    col = rig_cols[0]
+    for c in rig_cols:
+        for fc in list(c):
+            name = fc.data_path.split('"')[1] if fc.data_path.startswith('pose.bones["') else None
+            if name in driven:
+                c.remove(fc)
+    for fc in src_fcs:
+        name = fc.data_path.split('"')[1] if fc.data_path.startswith('pose.bones["') else None
+        if name not in driven:
+            continue
+        new = col.new(fc.data_path, index=fc.array_index)
+        new.keyframe_points.add(len(fc.keyframe_points))
+        for kp, sk in zip(new.keyframe_points, fc.keyframe_points):
+            kp.co = sk.co
+            kp.interpolation = sk.interpolation
+            kp.handle_left_type = sk.handle_left_type
+            kp.handle_right_type = sk.handle_right_type
+            kp.handle_left = sk.handle_left
+            kp.handle_right = sk.handle_right
+        new.update()
+    for name in driven:
+        rig.pose.bones[name].rotation_mode = src.pose.bones[name].rotation_mode
+        rig.pose.bones[name].matrix_basis = src.pose.bones[name].matrix_basis.copy()
+    return sorted(driven)
 
 
 def main():

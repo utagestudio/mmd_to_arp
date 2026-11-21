@@ -89,6 +89,10 @@ def run_post_fix(src, rig, preserve):
                 % (len(released), len(muted)) + keys_msg)
     created, _skipped = fix_convert.fix(rig, src)
     restored = fix_convert.fix_append(rig, src)
+    # a baked motion keyed the final pose of the bones these mechanisms drive
+    rekeyed = fix_convert.restore_driven_motion(rig, src)
+    if rekeyed:
+        keys_msg += ', VMD keys back on %d driven bones' % len(rekeyed)
     return 're-created %d MMD IK, restored %d MMD append' % (len(created), len(restored)) + keys_msg
 
 
