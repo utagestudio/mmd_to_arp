@@ -1,5 +1,5 @@
 // Cloudflare Worker that serves the static site in public/ (no Worker script).
-// Deployed by Workers Builds on push: root directory "site", build watch paths "site/*".
+// Deployed by Workers Builds on push: root directory "site", build watch paths "site/**".
 {
   "name": "mmd-to-arp",
   "compatibility_date": "2026-11-01",

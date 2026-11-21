@@ -41,7 +41,7 @@ BLENDER=/path/to/blender tools/build_extension.sh
 - `site/public/` の静的ファイルを、Cloudflare Workers（静的アセットのみ、Worker のスクリプトなし）で配信します。設定は `site/wrangler.jsonc` です。
 - デプロイは Cloudflare の Workers Builds で、GitHub への push 時に自動で行います。
   - Root directory：`site`
-  - Build watch paths（include）：`site/*`。`site/` の外だけを変えた push ではデプロイされません。
+  - Build watch paths（include）：`site/**`。`site/` の外だけを変えた push ではデプロイされません。`site/*` では 1 階層下までしか対象にならず、`site/public/` 以下の変更でデプロイされません。
   - Deploy command：`npx wrangler deploy`（既定値）。ビルドの手順はありません。
 - ページは英語（`index.html`）と日本語（`ja/index.html`）の 2 つです。内容を変えるときは両方を直します。
 - 最新のバージョンとダウンロードのリンクは、ページの JavaScript（`assets/site.js`）が `repository/index.json` を読んで表示します。リリースのたびに HTML を書き換える必要はありません。
