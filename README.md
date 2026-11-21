@@ -114,6 +114,40 @@ Quick Rig constrains every bone of the original skeleton to Auto-Rig Pro. This o
 
 For rigs with a baked motion, the keys of the IK-FK switches are removed. This also applies to motions baked with Quick Rig's own Make Rig.
 
+## FAQ and troubleshooting
+
+**The panel says "Required add-ons not enabled"**
+- Enable the add-ons listed there (mmd_tools, Auto-Rig Pro, Auto-Rig Pro: Quick Rig).
+
+**The panel says "untested"**
+- The installed Auto-Rig Pro or Quick Rig version has not been tested with this add-on.
+- It often works anyway. If the conversion fails, compare with the tested versions (see "Requirements").
+
+**The detected preset is wrong, or the arms or legs are misplaced**
+- Check the import settings of mmd_tools. "Rename Bones - L / R Suffix" must be enabled. "Use Underscore" and the translation to English must be disabled.
+- Choose another preset in **Preset** and convert again.
+- You can also load the mapping with **Load Mapping to Quick Rig** ("Step by Step") and fix the bone assignment in the Quick Rig panel.
+
+**After the conversion, some meshes (sleeves, decorations, parts moved by helper bones) do not move correctly**
+- Convert again in **Preserve** mode. Preserve keeps the helper bone mechanisms of the model.
+- Models detected with "helper-bone system that mmd_tools cannot reproduce" do not deform correctly in either mode.
+
+**The arms bend the wrong way in IK**
+- Rigs converted with a version older than 0.2.0 can have this problem. Convert again with the latest version.
+- If it still happens, move the IK pole of the elbow (c_arms_pole).
+
+**I want to redo the conversion**
+- Press Ctrl+Z to go back to before the conversion. If that does not work well, import the model again.
+
+**"Bake Motion" is not shown**
+- The MMD armature has no motion. Select the model, import the motion (VMD) with mmd_tools, then convert.
+
+**On a rig with a baked motion, the limbs go back to the motion when switched to FK**
+- This is expected. The baked motion is on the FK controls. Switch to IK only where you want to move the limbs freely (see "Switching IK / FK").
+
+**The rig broke after enabling "Copy Constraints" in Make Rig**
+- "Copy Constraints" breaks the internal bones of mmd_tools. Keep it disabled. The post-fix restores the MMD IK and append.
+
 ## Limitations
 
 - If the append parent is a bone mapped to Auto-Rig Pro, such as an arm or a leg, Convert loses that append. The helper bone only follows its parent bone. Use Preserve if this matters.
@@ -152,4 +186,6 @@ See [docs/presets.md](docs/presets.md) (in Japanese) for the list of presets and
 
 GPL-3.0-or-later. See [LICENSE](LICENSE) for the full text.
 
-Information for developers is in [DEVELOPMENT.md](DEVELOPMENT.md) (in Japanese).
+- Changes in each version: [CHANGELOG.md](CHANGELOG.md).
+- Reporting bugs and contributing: [CONTRIBUTING.md](CONTRIBUTING.md).
+- Information for developers is in [DEVELOPMENT.md](DEVELOPMENT.md) (in Japanese).
