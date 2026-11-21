@@ -22,8 +22,8 @@ def _normalize(names):
     return out
 
 
-# Helper-bone systems that mmd_tools itself does not reproduce in Blender
-# (some models): the result is broken in both modes.
+# Helper-bone systems that mmd_tools itself does not reproduce in Blender: the result
+# is broken in both modes.
 UNSUPPORTED_MARKERS = ('腕変形0.L', '腕軸D.L', '足軸D.L', 'ひじ軸D.L')
 NOTE_UNSUPPORTED = ('helper-bone system that mmd_tools cannot reproduce: '
                     'the rig may deform wrongly in both modes')
