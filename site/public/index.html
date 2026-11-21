@@ -259,7 +259,7 @@
           <summary>Will it work with my model?</summary>
           <div class="answer">
             <p>Models with the common MMD skeleton (standard and semi-standard bones) are supported. The add-on detects the spine, thumb, D bone and twist bone layout and picks a matching mapping.</p>
-            <p>Some models drive their helper bones with their own systems that mmd_tools itself cannot reproduce. They do not deform correctly in either mode, and the panel warns about them.</p>
+            <p>Some models drive their helper bones with their own systems that mmd_tools itself does not reproduce exactly as in MMD. The converted rig follows mmd_tools, so it may deform differently from MMD, and the panel shows a note.</p>
           </div>
         </details>
         <details>
@@ -273,7 +273,7 @@
           <div class="answer">
             <ul>
               <li>Physics (rigid bodies and joints).</li>
-              <li>In Convert, append whose parent is a bone mapped to Auto-Rig Pro (use Preserve for those models).</li>
+              <li>In Convert, append whose parent is a twist bone (腕捩, 手捩...). Use Preserve for those models.</li>
               <li>In Preserve, MMD IK that contains mapped bones, such as hair IK.</li>
             </ul>
           </div>

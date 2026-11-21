@@ -7,9 +7,14 @@ The version format is `<major>.<minor>.<fix>`.
 
 ## Unreleased
 
+### Changed
+- Convert restores append whose parent is a main bone replaced by an Auto-Rig Pro bone (legs, arms, spine...), through proxy bones. Models whose legs deform only through such helper bones now move correctly. Append from twist bones is still not restored.
+- The note for models with their own helper-bone systems now says that the rig follows mmd_tools and may deform differently from MMD.
+
 ### Fixed
 - Convert: on models whose thigh deforms through helper bones (a thigh twist bone moved by append from an IK helper), the thigh bent in its middle. These helper bones now follow the thigh.
 - Bake Motion: bones moved by MMD append or IK (eyes following 両目, leg helpers...) moved twice as much. They now use the VMD keys.
+- Bake Motion: a turning hip shifted the whole body (up to about 2.5 cm), because the Auto-Rig Pro root pivots elsewhere than 下半身. The root motion is now corrected.
 
 ## [0.5.0] - 2026-11-22
 
