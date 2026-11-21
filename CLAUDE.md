@@ -54,3 +54,6 @@ Repository layout, build, tests, versioning and branches: @DEVELOPMENT.md
   same term for the same thing, lists for steps and conditions. Use the English labels
   of the Blender and add-on UI.
 - Avoid naming specific models even as examples (see above).
+- The site (`site/public/`) has an English page and a Japanese page (`ja/`): change both
+  together. The same rules apply to its text. Images of models need permission from
+  the model's terms and a credit; do not add them without asking.
