@@ -19,7 +19,8 @@ This script, on the converted rig:
     on mapped owners (腕捩1 <- 腕捩...) is skipped, and so is append from bones moved by
     MMD IK that could not be re-created.
   - after a motion bake, gives the bones driven by these mechanisms their VMD keys back
-    (the bake keyed their final pose, which would apply the mechanism twice).
+    (the bake keyed their final pose, which would apply the mechanism twice), and
+    corrects the root location (Auto-Rig Pro's root pivots elsewhere than 下半身).
 
 Used by the addon; also runs standalone: select the ARP rig, open this file in
 the Text Editor and Run Script.
@@ -352,6 +353,101 @@ def restore_driven_motion(rig, src):
         rig.pose.bones[name].rotation_mode = src.pose.bones[name].rotation_mode
         rig.pose.bones[name].matrix_basis = src.pose.bones[name].matrix_basis.copy()
     return sorted(driven)
+
+
+# Auto-Rig Pro deform bone -> controller that carries its baked location
+POSITION_CTRLS = (('root.x', 'c_root_master.x'),
+                  ('spine_01.x', 'c_spine_01.x'), ('spine_02.x', 'c_spine_02.x'),
+                  ('spine_03.x', 'c_spine_03.x'), ('neck.x', 'c_neck.x'), ('head.x', 'c_head.x'),
+                  ('shoulder.l', 'c_shoulder.l'), ('shoulder.r', 'c_shoulder.r'))
+
+
+def fix_root_motion(rig, src):
+    """After a motion bake: Auto-Rig Pro's Remap places the root at the location of the
+    MMD root bone (下半身) only, but root.x pivots elsewhere (the MMD bone's head is at
+    the top of the hips), so a turning hip shifts the whole body. Correct the location
+    keys of the root controller first, then of the controls and orphan bones baked with
+    absolute locations (shoulders, hair...), which the root correction moved. The scene
+    is evaluated again only after a correction; the keys are edited in place. Returns
+    the number of keys changed."""
+    mmd_of = {v: k for k, v in mapped_bones(src).items()}
+    loc_fcs = {}  # bone -> [fcurve x, y, z] of its location
+    for col in _action_fcurves(rig):
+        for fc in col:
+            if fc.data_path.startswith('pose.bones["') and fc.data_path.endswith('"].location'):
+                loc_fcs.setdefault(fc.data_path.split('"')[1], [None] * 3)[fc.array_index] = fc
+    root_ctrl = POSITION_CTRLS[0][1]
+    if 'root.x' not in mmd_of or root_ctrl not in loc_fcs or 'root.x' not in rig.pose.bones:
+        return 0
+    items = [(mmd_of['root.x'], 'root.x', root_ctrl)]
+    for deform, ctrl in POSITION_CTRLS[1:]:
+        if deform in mmd_of and deform in rig.pose.bones and ctrl in loc_fcs:
+            items.append((mmd_of[deform], deform, ctrl))
+    # orphan bones baked with absolute locations: the first orphan bone of each chain
+    # (its parent is an Auto-Rig Pro bone); the rest of the chain follows its parent
+    driven = _driven_bones(rig)
+    for pb in rig.pose.bones:
+        if ('cc' not in pb.keys() or pb.name not in src.pose.bones or pb.name in driven
+                or pb.name not in loc_fcs or (pb.parent is not None and 'cc' in pb.parent.keys())
+                or any('cc' not in c.keys() for c in pb.children_recursive)):
+            continue  # also skip orphans above Auto-Rig Pro controls (全ての親, 肩P...)
+        items.append((pb.name, pb.name, pb.name))
+    keys = {}  # (bone, frame) -> [keyframe x, y, z]
+    for bone in {c for *_x, c in items}:
+        for axis, fc in enumerate(loc_fcs[bone]):
+            for kp in (fc.keyframe_points if fc else ()):
+                keys.setdefault((bone, int(round(kp.co[0]))), [None] * 3)[axis] = kp
+    frames = sorted(f for b, f in keys if b == root_ctrl)
+
+    scn = bpy.context.scene
+    view_layer = bpy.context.view_layer
+    mw = rig.matrix_world
+    meshes = [o for o in scn.objects if o.type == 'MESH' and not o.hide_viewport]
+    for o in meshes:  # only the armatures are needed: skip mesh evaluation
+        o.hide_viewport = True
+    frame = scn.frame_current
+    changed = 0
+    try:
+        for f in frames:
+            scn.frame_set(f)
+            for mmd, deform, ctrl in items:
+                kps = keys.get((ctrl, f))
+                if kps is None:
+                    continue
+                spb = src.pose.bones[mmd]
+                if mmd == deform:  # orphan bone: same rest pose as in MMD
+                    target = src.matrix_world @ spb.head
+                else:
+                    sbone = src.data.bones[mmd]
+                    d = (src.matrix_world @ spb.matrix) @ (src.matrix_world @ sbone.matrix_local).inverted()
+                    target = d @ (mw @ rig.data.bones[deform].head_local)
+                delta = target - mw @ rig.pose.bones[deform].head
+                if delta.length < 1e-4:  # 0.1 mm
+                    continue
+                pb = rig.pose.bones[ctrl]
+                rest = (pb.parent.matrix @ pb.parent.bone.matrix_local.inverted() @ pb.bone.matrix_local
+                        if pb.parent else pb.bone.matrix_local)
+                local = (mw @ rest).to_3x3().inverted() @ delta
+                for axis, (kp, v) in enumerate(zip(kps, local)):
+                    if kp is not None:
+                        kp.co[1] += v
+                        kp.handle_left[1] += v
+                        kp.handle_right[1] += v
+                        pb.location[axis] += v
+                if mmd != deform:
+                    # the bones below (also through Auto-Rig Pro constraints) move with
+                    # it; orphan chains do not depend on each other
+                    view_layer.update()
+                changed += 1
+    finally:
+        for o in meshes:
+            o.hide_viewport = False
+        for fcs in loc_fcs.values():
+            for fc in fcs:
+                if fc:
+                    fc.update()
+        scn.frame_set(frame)
+    return changed
 
 
 def main():

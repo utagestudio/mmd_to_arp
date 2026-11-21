@@ -93,6 +93,8 @@ def run_post_fix(src, rig, preserve):
     rekeyed = fix_convert.restore_driven_motion(rig, src)
     if rekeyed:
         keys_msg += ', VMD keys back on %d driven bones' % len(rekeyed)
+    if fix_convert.fix_root_motion(rig, src):
+        keys_msg += ', corrected the root motion'
     return 're-created %d MMD IK, restored %d MMD append' % (len(created), len(restored)) + keys_msg
 
 
