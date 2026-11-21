@@ -22,12 +22,9 @@ Repository layout, build, tests, versioning and branches: @DEVELOPMENT.md
 
 ## Testing in Blender
 
-- Run tests in a separate background Blender: `blender -b --python <script>`.
-- Never clear or modify the scene of a Blender session someone is working in (for
-  example one connected through MCP). The test helpers call `clear_scene()`, which
-  deletes everything, unsaved work included.
 - The helpers in `tests/blender/` are loaded with `exec()` into one namespace (see
-  DEVELOPMENT.md). Models are read from `_local/mmd/`.
+  DEVELOPMENT.md). Models are read from `_local/mmd/`. `clear_scene()` deletes all
+  objects of the current scene.
 - Compare results against the MMD source (vertex positions, bone matrices) rather than
   only checking that the operator finished.
 
