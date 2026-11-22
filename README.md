@@ -68,6 +68,8 @@ New versions then appear as updates in Blender.
 - **Bake Motion**: Shown when the MMD armature has a motion (VMD).
   - The motion is baked to the FK controls of the arms and legs.
   - The IK-FK switches are not keyed. You can switch to IK anywhere in the motion.
+  - After the bake, the root motion is corrected frame by frame. The sidebar shows the progress. A motion of a few thousand frames takes about one minute.
+  - Press Esc or "Stop" to stop the correction. The frames corrected so far are kept. Undo (Ctrl+Z) goes back to the rig before the correction, and once more to before Convert.
 
 ## Switching IK / FK
 
@@ -112,6 +114,8 @@ Quick Rig does not copy the constraints of the bones that are not mapped. The MM
 
 - **IK**: Re-creates the IK of helper bones that follow the arms, such as sleeves.
 - **Append**: Re-creates append, such as the eyes following the "両目" bone, highlights and "肩C". It uses the same mechanism as mmd_tools.
+  - Thigh helper bones that take the thigh swing through an IK helper and append (such as 膝捩) work too: both the IK and the append are re-created.
+- **Motion**: When a motion is baked, the bones moved by IK or append get the original VMD keys. The baked final pose already includes the IK and append, so it would apply them twice.
 
 ### Preserve
 
@@ -161,9 +165,9 @@ For rigs with a baked motion, the keys of the IK-FK switches are removed. This a
 
 ## Limitations
 
-- If the append parent is a bone mapped to Auto-Rig Pro, such as an arm or a leg, Convert loses that append. The helper bone only follows its parent bone. Use Preserve if this matters.
+- If the append parent is a twist bone (腕捩, 手捩...), Convert loses that append. The helper bone only follows its parent bone, because MMD and Auto-Rig Pro split the twist differently. Use Preserve if this matters. Append from the other mapped bones, such as the arms and legs, is restored.
 - Do not enable "Copy Constraints" in Make Rig. It breaks the internal bones of mmd_tools.
-- Some models drive their helper bones with their own systems that mmd_tools itself cannot reproduce. These models do not deform correctly in either mode. A warning is shown when the preset is detected.
+- Some models drive their helper bones with their own systems that mmd_tools itself does not reproduce exactly as in MMD. The converted rig follows mmd_tools, so it may deform differently from MMD. A note is shown when the preset is detected.
 - Preserve mutes the MMD IK that contains mapped bones. Hair IK and similar IK stop working. Move the hair with the Auto-Rig Pro controllers.
 - On old models without arm twist bones (腕捩), twisting the upper arm in Convert does not twist the upper arm mesh. Bending works.
 - Physics (rigid bodies and joints) are not reproduced.

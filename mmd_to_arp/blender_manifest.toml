@@ -1,11 +1,11 @@
 schema_version = "1.0.0"
 
 id = "mmd_to_arp"
-version = "0.5.0"
+version = "0.5.1"
 name = "MMD to Auto-Rig Pro"
 tagline = "Rig MMD models with Auto-Rig Pro through Quick Rig"
 maintainer = "utagestudio"
-website = "https://github.com/utagestudio/mmd_to_arp"
+website = "https://mmd-to-arp.utage.studio/"
 type = "add-on"
 
 tags = ["Rigging", "Animation"]
