@@ -11,7 +11,8 @@ Repository layout, build, tests, versioning and branches: @DEVELOPMENT.md
 
 - Do not write the names of MMD models, characters, model authors or "〇〇式" model
   families anywhere that gets committed: code, comments, preset names, docs, README,
-  commit messages, test names.
+  commit messages, test names. The only exception is the credit for site media (see
+  Docs).
 - Describe a case by its bone structure instead, e.g. "spine 上半身1- / 上半身2-",
   "wrist bone named 手", "D bones without weights". Name presets after the structure
   (`MMD_spine1m`, not a model name).
@@ -57,3 +58,7 @@ Repository layout, build, tests, versioning and branches: @DEVELOPMENT.md
 - The site (`site/public/`) has an English page and a Japanese page (`ja/`): change both
   together. The same rules apply to its text. Images of models need permission from
   the model's terms and a credit; do not add them without asking.
+- Exception to the model-name rule: the credit for an image or video shown on the site
+  (in its caption and the site footer) names the model, its rights holder and its
+  author, following the model's terms. Use it only for media the user added with
+  permission, and nowhere else (code, README, commit messages).
