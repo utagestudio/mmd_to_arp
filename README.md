@@ -10,6 +10,8 @@ A Blender add-on that converts MMD models into Auto-Rig Pro rigs.
 - After the conversion, it also fixes the MMD-specific mechanisms: helper bones driven by "append" (付与) or by IK.
 - The bone structures of 241 distributed models were analyzed. For each structure pattern, the conversion was checked on 36 representative models.
 
+**Check the terms of use of the model.** Even if the add-on can convert a model, whether you may use it in Blender, modify it or publish what you make is decided by the terms of use of each model and motion. Some models do not allow use outside MMD or modification. Check the terms and use the model within them.
+
 ## Requirements
 
 | Software | Tested version |
@@ -213,7 +215,8 @@ See [docs/presets.md](docs/presets.md) (in Japanese) for the list of presets and
   - The developers of mmd_tools
   - The author of MikuMikuDance
   - The Blender Foundation
-- The rights to MMD models and motions belong to their authors. Follow the terms of use of each model and motion, including modification and use in other software.
+- The rights to MMD models and motions belong to their authors. This add-on grants no rights to models or motions.
+- Even if the add-on can convert a model, whether you may use it in Blender, modify it or publish what you make is decided by the terms of use of each model and motion. Some models do not allow use outside MMD or modification. Check the terms and use the model within them.
 - The author is not liable for any damage caused by using this add-on.
 
 ## License
