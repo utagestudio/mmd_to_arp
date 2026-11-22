@@ -5,6 +5,11 @@ English | [日本語](CHANGELOG.ja.md)
 All notable changes to MMD to Auto-Rig Pro are listed here.
 The version format is `<major>.<minor>.<fix>`.
 
+## Unreleased
+
+### Fixed
+- IK / FK panel: on a rig with a baked motion, a limb switched to IK and back to FK stayed in IK, although the panel showed FK (with auto keying off).
+
 ## [0.5.1] - 2026-11-22
 
 ### Changed
