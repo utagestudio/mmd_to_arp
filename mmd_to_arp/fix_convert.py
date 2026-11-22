@@ -362,56 +362,80 @@ POSITION_CTRLS = (('root.x', 'c_root_master.x'),
                   ('shoulder.l', 'c_shoulder.l'), ('shoulder.r', 'c_shoulder.r'))
 
 
-def fix_root_motion(rig, src):
+class RootMotionFix:
     """After a motion bake: Auto-Rig Pro's Remap places the root at the location of the
     MMD root bone (下半身) only, but root.x pivots elsewhere (the MMD bone's head is at
     the top of the hips), so a turning hip shifts the whole body. Correct the location
     keys of the root controller first, then of the controls and orphan bones baked with
-    absolute locations (shoulders, hair...), which the root correction moved. The scene
-    is evaluated again only after a correction; the keys are edited in place. Returns
-    the number of keys changed."""
-    mmd_of = {v: k for k, v in mapped_bones(src).items()}
-    loc_fcs = {}  # bone -> [fcurve x, y, z] of its location
-    for col in _action_fcurves(rig):
-        for fc in col:
-            if fc.data_path.startswith('pose.bones["') and fc.data_path.endswith('"].location'):
-                loc_fcs.setdefault(fc.data_path.split('"')[1], [None] * 3)[fc.array_index] = fc
-    root_ctrl = POSITION_CTRLS[0][1]
-    if 'root.x' not in mmd_of or root_ctrl not in loc_fcs or 'root.x' not in rig.pose.bones:
-        return 0
-    items = [(mmd_of['root.x'], 'root.x', root_ctrl)]
-    for deform, ctrl in POSITION_CTRLS[1:]:
-        if deform in mmd_of and deform in rig.pose.bones and ctrl in loc_fcs:
-            items.append((mmd_of[deform], deform, ctrl))
-    # orphan bones baked with absolute locations: the first orphan bone of each chain
-    # (its parent is an Auto-Rig Pro bone); the rest of the chain follows its parent
-    driven = _driven_bones(rig)
-    for pb in rig.pose.bones:
-        if ('cc' not in pb.keys() or pb.name not in src.pose.bones or pb.name in driven
-                or pb.name not in loc_fcs or (pb.parent is not None and 'cc' in pb.parent.keys())
-                or any('cc' not in c.keys() for c in pb.children_recursive)):
-            continue  # also skip orphans above Auto-Rig Pro controls (全ての親, 肩P...)
-        items.append((pb.name, pb.name, pb.name))
-    keys = {}  # (bone, frame) -> [keyframe x, y, z]
-    for bone in {c for *_x, c in items}:
-        for axis, fc in enumerate(loc_fcs[bone]):
-            for kp in (fc.keyframe_points if fc else ()):
-                keys.setdefault((bone, int(round(kp.co[0]))), [None] * 3)[axis] = kp
-    frames = sorted(f for b, f in keys if b == root_ctrl)
+    absolute locations (shoulders, hair...), which the root correction moved.
 
-    scn = bpy.context.scene
-    view_layer = bpy.context.view_layer
-    mw = rig.matrix_world
-    meshes = [o for o in scn.objects if o.type == 'MESH' and not o.hide_viewport]
-    for o in meshes:  # only the armatures are needed: skip mesh evaluation
-        o.hide_viewport = True
-    frame = scn.frame_current
-    changed = 0
-    try:
-        for f in frames:
+    Runs frame by frame with `step()` so that it can be spread over timer events and
+    stopped; `finish()` writes the corrections found so far into the keys. The keys are
+    only changed at the end: changing a key makes Blender evaluate the whole action
+    again, which is slower than the correction itself."""
+
+    def __init__(self, rig, src):
+        self.rig, self.src = rig, src
+        self.frames, self.items, self.keys, self.loc_fcs = [], [], {}, {}
+        self.offsets = {}  # (bone, frame) -> local offset (Vector)
+        self.index = 0
+        self.meshes = None
+        mmd_of = {v: k for k, v in mapped_bones(src).items()}
+        for col in _action_fcurves(rig):
+            for fc in col:
+                if fc.data_path.startswith('pose.bones["') and fc.data_path.endswith('"].location'):
+                    self.loc_fcs.setdefault(fc.data_path.split('"')[1], [None] * 3)[fc.array_index] = fc
+        root_ctrl = POSITION_CTRLS[0][1]
+        if 'root.x' not in mmd_of or root_ctrl not in self.loc_fcs or 'root.x' not in rig.pose.bones:
+            return
+        items = [(mmd_of['root.x'], 'root.x', root_ctrl)]
+        for deform, ctrl in POSITION_CTRLS[1:]:
+            if deform in mmd_of and deform in rig.pose.bones and ctrl in self.loc_fcs:
+                items.append((mmd_of[deform], deform, ctrl))
+        # orphan bones baked with absolute locations: the first orphan bone of each chain
+        # (its parent is an Auto-Rig Pro bone); the rest of the chain follows its parent
+        driven = _driven_bones(rig)
+        for pb in rig.pose.bones:
+            if ('cc' not in pb.keys() or pb.name not in src.pose.bones or pb.name in driven
+                    or pb.name not in self.loc_fcs or (pb.parent is not None and 'cc' in pb.parent.keys())
+                    or any('cc' not in c.keys() for c in pb.children_recursive)):
+                continue  # also skip orphans above Auto-Rig Pro controls (全ての親, 肩P...)
+            items.append((pb.name, pb.name, pb.name))
+        self.items = items
+        for bone in {c for *_x, c in items}:
+            for axis, fc in enumerate(self.loc_fcs[bone]):
+                for kp in (fc.keyframe_points if fc else ()):
+                    self.keys.setdefault((bone, int(round(kp.co[0]))), [None] * 3)[axis] = kp
+        self.frames = sorted(f for b, f in self.keys if b == root_ctrl)
+
+    @property
+    def total(self):
+        return len(self.frames)
+
+    @property
+    def done(self):
+        return self.index >= len(self.frames)
+
+    def _begin(self):
+        scn = bpy.context.scene
+        self.frame = scn.frame_current
+        # only the armatures are needed: skip mesh evaluation
+        self.meshes = [o for o in scn.objects if o.type == 'MESH' and not o.hide_viewport]
+        for o in self.meshes:
+            o.hide_viewport = True
+
+    def step(self, count=1):
+        """Correct the next `count` frames. Returns True when all frames are done."""
+        if self.meshes is None:
+            self._begin()
+        scn = bpy.context.scene
+        view_layer = bpy.context.view_layer
+        rig, src = self.rig, self.src
+        mw = rig.matrix_world
+        for f in self.frames[self.index:self.index + count]:
             scn.frame_set(f)
-            for mmd, deform, ctrl in items:
-                kps = keys.get((ctrl, f))
+            for mmd, deform, ctrl in self.items:
+                kps = self.keys.get((ctrl, f))
                 if kps is None:
                     continue
                 spb = src.pose.bones[mmd]
@@ -430,23 +454,48 @@ def fix_root_motion(rig, src):
                 local = (mw @ rest).to_3x3().inverted() @ delta
                 for axis, (kp, v) in enumerate(zip(kps, local)):
                     if kp is not None:
-                        kp.co[1] += v
-                        kp.handle_left[1] += v
-                        kp.handle_right[1] += v
                         pb.location[axis] += v
+                self.offsets[(ctrl, f)] = local
                 if mmd != deform:
                     # the bones below (also through Auto-Rig Pro constraints) move with
                     # it; orphan chains do not depend on each other
                     view_layer.update()
-                changed += 1
-    finally:
-        for o in meshes:
-            o.hide_viewport = False
-        for fcs in loc_fcs.values():
+            self.index += 1
+        return self.done
+
+    def finish(self):
+        """Write the corrections into the keys and restore the scene. Returns the number
+        of keys changed."""
+        for (ctrl, f), local in self.offsets.items():
+            for kp, v in zip(self.keys[(ctrl, f)], local):
+                if kp is not None:
+                    kp.co[1] += v
+                    kp.handle_left[1] += v
+                    kp.handle_right[1] += v
+        for fcs in self.loc_fcs.values():
             for fc in fcs:
                 if fc:
                     fc.update()
-        scn.frame_set(frame)
+        if self.meshes is not None:
+            for o in self.meshes:
+                try:
+                    o.hide_viewport = False
+                except ReferenceError:
+                    pass
+            bpy.context.scene.frame_set(self.frame)
+            self.meshes = None
+        return len(self.offsets)
+
+
+def fix_root_motion(rig, src):
+    """Run RootMotionFix on all frames at once. Returns the number of keys changed."""
+    job = RootMotionFix(rig, src)
+    if not job.frames:
+        return 0
+    try:
+        job.step(len(job.frames))
+    finally:
+        changed = job.finish()
     return changed
 
 
