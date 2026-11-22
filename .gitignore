@@ -17,3 +17,6 @@ dist/
 
 # Personal Claude Code instructions
 CLAUDE.local.md
+
+# wrangler dev cache
+.wrangler/

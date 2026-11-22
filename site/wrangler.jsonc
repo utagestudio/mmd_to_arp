@@ -1,12 +1,19 @@
-// Cloudflare Worker that serves the static site in public/ (no Worker script).
+// Cloudflare Worker that serves the static site in public/.
 // Deployed by Workers Builds on push: root directory "site", build watch paths "site/**".
+// src/worker.js adds Google Tag Manager to the HTML pages when the GTM_ID variable is
+// set in the Cloudflare dashboard. keep_vars keeps that variable across deployments.
 {
   "name": "mmd-to-arp",
+  "main": "src/worker.js",
   "compatibility_date": "2026-11-01",
+  "keep_vars": true,
   "assets": {
     "directory": "./public",
+    "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    // Only the pages go through the Worker; the other files are served directly.
+    "run_worker_first": ["/*", "!/assets/*", "!/repository/*"]
   },
   "routes": [
     { "pattern": "mmd-to-arp.utage.studio", "custom_domain": true }
