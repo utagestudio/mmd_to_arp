@@ -102,7 +102,6 @@ This add-on finds the arms whose elbow is not clearly bent backward. For those a
 
 The converted model is an Auto-Rig Pro rig. You can apply motions made for other skeletons, such as Mixamo FBX files or BVH motion capture, with the Remap feature of Auto-Rig Pro.
 
-- Helper bones moved by MMD append or IK (eyes, sleeves...) follow the applied motion.
 - Checked with a Convert rig and a Mixamo motion.
 
 MMD models stand in an A-pose: the upper arms point about 40° down. Many motions, such as Mixamo motions, are made for a T-pose. Match the rest pose of the motion to the rig first. Otherwise the arms turn too far, and the hands go behind the back.
