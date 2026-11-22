@@ -86,7 +86,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg>
             無料で入手
           </a>
-          <a class="btn btn-secondary" href="#features">できること</a>
+          <a class="btn btn-secondary" href="#benefits">できること</a>
         </div>
         <div class="hero-meta">
           <span>無料・オープンソース</span>
@@ -123,6 +123,43 @@
         </div>
         <figcaption>3D ビューのサイドバーに表示されるパネル。操作はすべてここから行います。</figcaption>
       </figure>
+    </div>
+  </section>
+
+  <section class="section" id="benefits">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">できること</span>
+        <h2>Auto-Rig Pro のリグにすると、<wbr>モーションの使い方が<wbr>広がります</h2>
+        <p>変換したモデルは、Auto-Rig Pro の機能でそのまま動かせます。</p>
+      </div>
+      <div class="benefits">
+      <article class="benefit">
+        <figure class="benefit-media">
+          <video autoplay muted loop playsinline preload="metadata" poster="../assets/media/remap.jpg" aria-label="Mixamo のモーションを Remap で MMD モデルに適用している動画"><source src="../assets/media/remap.mp4" type="video/mp4"></video>
+          <figcaption>モデル：東北ずん子 PMX モデル（公式服）© SSS LLC.、モデル制作：湯葉、モーション：Mixamo</figcaption>
+        </figure>
+        <div class="benefit-copy">
+          <span class="benefit-num">01</span>
+          <h3>VMD 以外のモーションも使える</h3>
+          <p>Auto-Rig Pro の Remap 機能で、Mixamo の FBX やモーションキャプチャーの BVH など、ほかの骨格用のモーションを適用できます。</p>
+          <p class="benefit-note">Remap は Auto-Rig Pro の機能です。Mixamo などの T ポーズのモーションは、Remap の「Redefine Rest Pose」で休止姿勢を合わせてから適用します。</p>
+          <a class="more" href="https://github.com/utagestudio/mmd_to_arp/blob/main/README.ja.md#ほかのモーションを使うauto-rig-pro-の-remap">Remap の手順（README） <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+      <article class="benefit reverse">
+        <figure class="benefit-media">
+          <video autoplay muted loop playsinline preload="metadata" poster="../assets/media/ikfk.jpg" aria-label="歩きながら片手を IK に切り替えて机の上を滑らせ、FK に戻す動画"><source src="../assets/media/ikfk.mp4" type="video/mp4"></video>
+          <figcaption>モデル：東北ずん子 PMX モデル（公式服）© SSS LLC.、モデル制作：湯葉、モーション：Mixamo</figcaption>
+        </figure>
+        <div class="benefit-copy">
+          <span class="benefit-num">02</span>
+          <h3>モーションを活かして、<wbr>必要なところだけ IK に</h3>
+          <p>焼き込んだ VMD モーションや、Remap で適用したモーションのまま、腕と脚を 1 本ずつ IK に切り替えられます。机の上に手を滑らせる、段差に足を乗せるといった調整を、その手足だけで行えます。FK に戻せば、元のモーションの動きに戻ります。</p>
+          <a class="more" href="#motion">焼き込みと IK / FK の切り替え <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+      </div>
     </div>
   </section>
 
@@ -172,7 +209,7 @@
       <div class="split">
         <div class="section-head">
           <span class="eyebrow">モーションと IK / FK</span>
-          <h2>VMD の動きを活かしながら、<wbr>必要なところだけ IK で</h2>
+          <h2>モーションの焼き込みと<wbr> IK / FK の切り替え</h2>
           <p>VMD モーションを読み込んであれば、Convert でリグに焼き込みます。そのあと「IK / FK」パネルで、腕と脚ごとにポーズを保ったまま切り替えられます。</p>
           <ol class="steps-list">
             <li><div><b>モーションを焼き込む</b><span>モーションは FK コントローラーに入ります。IK-FK スイッチにはキーを打ちません。</span></div></li>
@@ -309,6 +346,7 @@
     <div class="fine">
       <p>MMD to Auto-Rig Pro は、utagestudio が GPL-3.0-or-later ライセンスで公開しているフリーソフトウェアです。</p>
       <p>MMD モデルとモーションの権利は、それぞれの作者にあります。各モデル・モーションの利用規約に従ってください。</p>
+      <p>紹介動画のモデル：東北ずん子 PMX モデル（公式服）。© SSS LLC.、モデル制作：湯葉。<a href="https://zunko.jp/guideline.html">東北ずん子・ずんだもんプロジェクトのガイドライン</a>に従って使用しています。モーション：Mixamo。</p>
       <p>このアドオンは非公式のツールです。Auto-Rig Pro / Auto-Rig Pro: Quick Rig の開発元（Artell）、mmd_tools の開発者、MikuMikuDance の作者、Blender Foundation とは関係がなく、承認も受けていません。Blender は Blender Foundation の商標です。</p>
     </div>
   </div>

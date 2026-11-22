@@ -98,6 +98,25 @@ Quick Rig は、肘の IK ポールの位置を、腕のボーンのロールか
 
 このアドオンは、肘がはっきり後ろへ曲がっていない腕を見つけて、Quick Rig の「Auto-Elbow Direction」（Force Straight Direction）を有効にしてから変換します。このとき、肘の関節の位置が、肩と手首を結ぶ線の上に移動します。移動量は多くの場合数 mm で、確認したモデルでは最大約 1 cm でした。
 
+## ほかのモーションを使う（Auto-Rig Pro の Remap）
+
+変換したモデルは、Auto-Rig Pro のリグになります。Auto-Rig Pro の Remap 機能で、Mixamo の FBX やモーションキャプチャーの BVH など、ほかの骨格用のモーションを適用できます。
+
+- Convert で変換したリグと、Mixamo のモーションで確認しています。
+
+MMD モデルの休止姿勢は A ポーズで、上腕が約 40° 下を向いています。Mixamo など、多くのモーションは T ポーズ用です。先にモーションの休止姿勢をリグに合わせてください。合わせないと、腕が回りすぎて、手が背中の後ろに回ります。
+
+1. Auto-Rig Pro の Remap パネルを開きます。モーションのあるアーマチュアを Source に、リグを Target にします。
+2. 「Build Bones List」を押します。
+3. 「Mapping Presets」で、Source に合うプリセットを読み込みます。Mixamo なら、腕と脚が FK の Mixamo のプリセットを使います。
+4. 「Redefine Rest Pose」を押します。
+5. Source の腕のボーン（上腕、前腕、手）を選びます。
+6. 「Copy Selected Bones Rotation」を押します。選んだボーンが、リグのボーンと同じ向きになります。
+7. 「Apply」を押します。
+8. 「Re-Target」を押します。
+
+脚の向きも違う場合は、手順 5〜6 で脚も合わせてください。
+
 ## 手順を分けて実行する
 
 サイドバーの「Step by Step」から、各手順を個別に実行できます。
