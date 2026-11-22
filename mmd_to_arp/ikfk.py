@@ -54,6 +54,10 @@ def switch(context, rig, limb, side, target):
     pb = rig.pose.bones[LIMBS[limb][0] + side]
     if target == 'FK' and fk_animated(rig, limb, side):
         pb['ik_fk_switch'] = 1.0
+        # setting a custom property does not tag the rig: the drivers of the switch
+        # would keep the IK pose until something else updates the rig
+        rig.update_tag()
+        context.view_layer.update()
         if autokey:
             pb.keyframe_insert(data_path=SWITCH_PATH)
     else:
@@ -130,5 +134,7 @@ def remove_switch_keys(rig):
             if pb is not None:
                 pb['ik_fk_switch'] = value
             changed.append(name)
+    if changed:
+        rig.update_tag()  # the drivers of the switches read the new values
     return changed
 
