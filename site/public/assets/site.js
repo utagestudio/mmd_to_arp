@@ -35,6 +35,16 @@
     });
   });
 
+  // Autoplaying videos: stop them for people who ask for less motion (the poster stays),
+  // and add controls so they can still play them.
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    Array.prototype.forEach.call(document.querySelectorAll("video[autoplay]"), function (v) {
+      v.removeAttribute("autoplay");
+      v.pause();
+      v.controls = true;
+    });
+  }
+
   // Latest release from the extension repository (written by tools/make_repository.py).
   // Without JavaScript the download links keep pointing to GitHub Releases.
   var base = new URL("/repository/", location.href);

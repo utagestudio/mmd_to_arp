@@ -86,7 +86,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg>
             Get it free
           </a>
-          <a class="btn btn-secondary" href="#features">What it does</a>
+          <a class="btn btn-secondary" href="#benefits">What it does</a>
         </div>
         <div class="hero-meta">
           <span>Free and open source</span>
@@ -123,6 +123,47 @@
         </div>
         <figcaption>The add-on panel in the 3D Viewport sidebar. Everything happens from here.</figcaption>
       </figure>
+    </div>
+  </section>
+
+  <section class="section" id="benefits">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Why use it</span>
+        <h2>An Auto-Rig Pro rig opens up<wbr> more ways to animate</h2>
+        <p>The converted model works with the features of Auto-Rig Pro.</p>
+      </div>
+      <div class="benefits">
+      <article class="benefit">
+        <figure class="benefit-media">
+          <!-- When the video is ready, replace the placeholder div with:
+            <video autoplay muted loop playsinline preload="metadata" poster="assets/media/remap.jpg" aria-label="Video: a Mixamo motion applied to an MMD model with Remap"><source src="assets/media/remap.mp4" type="video/mp4"></video> -->
+          <div class="media-ph" role="img" aria-label="Video: a Mixamo motion applied to an MMD model with Remap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z"/></svg><span>Video coming soon</span></div>
+          <figcaption>Model: Tohoku Zunko PMX model (official outfit), © SSS LLC., modeled by 湯葉. Motion: Mixamo.</figcaption>
+        </figure>
+        <div class="benefit-copy">
+          <span class="benefit-num">01</span>
+          <h3>Use motions beyond VMD</h3>
+          <p>With the Remap feature of Auto-Rig Pro, you can apply motions made for other skeletons, such as Mixamo FBX files or BVH motion capture. Helper bones moved by MMD append or IK (eyes, sleeves...) follow the motion.</p>
+          <p class="benefit-note">Remap is a feature of Auto-Rig Pro. For T-pose motions such as Mixamo, match the rest pose with "Redefine Rest Pose" in Remap first.</p>
+          <a class="more" href="https://github.com/utagestudio/mmd_to_arp#using-other-motions-auto-rig-pro-remap">Remap steps (README) <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+      <article class="benefit reverse">
+        <figure class="benefit-media">
+          <!-- When the video is ready, replace the placeholder div with:
+            <video autoplay muted loop playsinline preload="metadata" poster="assets/media/ikfk.jpg" aria-label="Video: one hand switched to IK and placed on a desk during a dance, then back to FK"><source src="assets/media/ikfk.mp4" type="video/mp4"></video> -->
+          <div class="media-ph" role="img" aria-label="Video: one hand switched to IK and placed on a desk during a dance, then back to FK"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z"/></svg><span>Video coming soon</span></div>
+          <figcaption>Model: Tohoku Zunko PMX model (official outfit), © SSS LLC., modeled by 湯葉.</figcaption>
+        </figure>
+        <div class="benefit-copy">
+          <span class="benefit-num">02</span>
+          <h3>Keep the motion,<wbr> use IK only where you need it</h3>
+          <p>Bake a VMD motion, then switch each arm or leg to IK where you need it. Put a hand on a desk or a foot on a step, and leave the rest of the motion as it is. Switch back to FK to return to the original motion.</p>
+          <a class="more" href="#motion">Baking and switching IK / FK <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+      </div>
     </div>
   </section>
 
@@ -172,7 +213,7 @@
       <div class="split">
         <div class="section-head">
           <span class="eyebrow">Motion and IK / FK</span>
-          <h2>Keep the VMD motion, take over with IK where you need it</h2>
+          <h2>Baking a motion and<wbr> switching IK / FK</h2>
           <p>With a VMD motion loaded, Convert bakes it onto the rig. The IK / FK panel then switches each arm and leg while keeping the pose.</p>
           <ol class="steps-list">
             <li><div><b>Bake the motion</b><span>The motion goes onto the FK controls. The IK-FK switches stay unkeyed.</span></div></li>
@@ -309,6 +350,7 @@
     <div class="fine">
       <p>MMD to Auto-Rig Pro is free software under the GPL-3.0-or-later license, made by utagestudio.</p>
       <p>The rights to MMD models and motions belong to their authors. Follow the terms of use of each model and motion.</p>
+      <p>Model in the videos: Tohoku Zunko PMX model (official outfit), © SSS LLC., modeled by 湯葉. Used under the <a href="https://zunko.jp/guideline.html">Tohoku Zunko / Zundamon Project guidelines</a>. Motion: Mixamo.</p>
       <p>This is an unofficial tool. It is not affiliated with or endorsed by Artell (developer of Auto-Rig Pro and Auto-Rig Pro: Quick Rig), the mmd_tools developers, the author of MikuMikuDance, or the Blender Foundation. Blender is a trademark of the Blender Foundation.</p>
     </div>
   </div>
