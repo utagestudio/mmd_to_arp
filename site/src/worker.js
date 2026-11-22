@@ -1,6 +1,7 @@
 // Serves the static site in public/ and adds Google Tag Manager to the HTML pages
 // when the GTM_ID variable is set in Cloudflare (Settings > Variables and Secrets).
-// Without GTM_ID (local checks, test deployments) the pages are served unchanged.
+// Without GTM_ID, and on *.workers.dev (branch previews of Workers Builds share the
+// variables of production), the pages are served unchanged.
 
 const GTM_ID_PATTERN = /^GTM-[A-Z0-9]+$/;
 
@@ -29,7 +30,8 @@ export default {
     const id = (env.GTM_ID || '').trim();
     const type = response.headers.get('Content-Type') || '';
     // The ID goes into a script: accept only the GTM format.
-    if (!GTM_ID_PATTERN.test(id) || !type.startsWith('text/html')) {
+    const host = new URL(request.url).hostname;
+    if (!GTM_ID_PATTERN.test(id) || !type.startsWith('text/html') || host.endsWith('.workers.dev')) {
       return response;
     }
     const rewritten = new HTMLRewriter()

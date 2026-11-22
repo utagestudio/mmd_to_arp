@@ -41,7 +41,8 @@ BLENDER=/path/to/blender tools/build_extension.sh
 - `site/public/` の静的ファイルを、Cloudflare Workers で配信します。設定は `site/wrangler.jsonc` です。
 - Worker のスクリプト（`site/src/worker.js`）は、HTML のページにだけ Google Tag Manager のコードを差し込みます。
   - Cloudflare のダッシュボードで、Worker の Settings → Variables and Secrets に、テキストの変数 `GTM_ID`（例：`GTM-XXXXXXX`）を設定したときだけ差し込みます。
-  - 設定していないとき、または `GTM-` で始まる形式でないときは、ページをそのまま返します。開発環境やテスト用のデプロイでは設定しないでください。
+  - 設定していないとき、または `GTM-` で始まる形式でないときは、ページをそのまま返します。
+  - `*.workers.dev` のアドレスでは、変数があっても差し込みません。main 以外のブランチのプレビュー URL は本番と変数が共通なので、ここで除外しています。
   - `keep_vars` を有効にしているので、デプロイしても変数は消えません。
   - `assets/` と `repository/` のファイルは Worker を通さず、そのまま配信します。
 - デプロイは Cloudflare の Workers Builds で、GitHub への push 時に自動で行います。
