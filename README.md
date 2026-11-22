@@ -98,6 +98,26 @@ Quick Rig places the IK pole of the elbow from the roll of the arm bone. Because
 
 This add-on finds the arms whose elbow is not clearly bent backward. For those arms, it enables Quick Rig's "Auto-Elbow Direction" (Force Straight Direction) before the conversion. The elbow joint then moves onto the line between the shoulder and the wrist. It usually moves a few millimeters. The largest move in the tested models was about 1 cm.
 
+## Using other motions (Auto-Rig Pro Remap)
+
+The converted model is an Auto-Rig Pro rig. You can apply motions made for other skeletons, such as Mixamo FBX files or BVH motion capture, with the Remap feature of Auto-Rig Pro.
+
+- Helper bones moved by MMD append or IK (eyes, sleeves...) follow the applied motion.
+- Checked with a Convert rig and a Mixamo motion.
+
+MMD models stand in an A-pose: the upper arms point about 40° down. Many motions, such as Mixamo motions, are made for a T-pose. Match the rest pose of the motion to the rig first. Otherwise the arms turn too far, and the hands go behind the back.
+
+1. Open the Remap panel of Auto-Rig Pro. Set the armature with the motion as the source and the rig as the target.
+2. Click "Build Bones List".
+3. In "Mapping Presets", import a preset for the source. For Mixamo, use the Mixamo preset with FK arms and legs.
+4. Click "Redefine Rest Pose".
+5. Select the arm bones of the source (upper arm, forearm and hand).
+6. Click "Copy Selected Bones Rotation". The selected bones point in the same direction as the bones of the rig.
+7. Click "Apply".
+8. Click "Re-Target".
+
+If the legs also point in different directions, match them in steps 5 and 6 too.
+
 ## Running the steps separately
 
 The "Step by Step" section of the sidebar runs each step on its own.
