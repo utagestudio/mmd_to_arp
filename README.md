@@ -68,6 +68,8 @@ New versions then appear as updates in Blender.
 - **Bake Motion**: Shown when the MMD armature has a motion (VMD).
   - The motion is baked to the FK controls of the arms and legs.
   - The IK-FK switches are not keyed. You can switch to IK anywhere in the motion.
+  - After the bake, the root motion is corrected frame by frame. The sidebar shows the progress. A motion of a few thousand frames takes about one minute.
+  - Press Esc or "Stop" to stop the correction. The frames corrected so far are kept. Undo (Ctrl+Z) goes back to the rig before the correction, and once more to before Convert.
 
 ## Switching IK / FK
 

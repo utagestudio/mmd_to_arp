@@ -14,7 +14,7 @@ The version format is `<major>.<minor>.<fix>`.
 ### Fixed
 - Convert: on models whose thigh deforms through helper bones (a thigh twist bone moved by append from an IK helper), the thigh bent in its middle. These helper bones now follow the thigh.
 - Bake Motion: bones moved by MMD append or IK (eyes following 両目, leg helpers...) moved twice as much. They now use the VMD keys.
-- Bake Motion: a turning hip shifted the whole body (up to about 2.5 cm), because the Auto-Rig Pro root pivots elsewhere than 下半身. The root motion is now corrected.
+- Bake Motion: a turning hip shifted the whole body (up to about 2.5 cm), because the Auto-Rig Pro root pivots elsewhere than 下半身. The root motion is now corrected. The sidebar shows its progress, and Esc or "Stop" stops it.
 
 ## [0.5.0] - 2026-11-22
 
