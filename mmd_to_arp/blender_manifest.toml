@@ -5,7 +5,7 @@ version = "0.5.1-dev.7"
 name = "MMD to Auto-Rig Pro"
 tagline = "Rig MMD models with Auto-Rig Pro through Quick Rig"
 maintainer = "utagestudio"
-website = "https://github.com/utagestudio/mmd_to_arp"
+website = "https://mmd-to-arp.utage.studio/"
 type = "add-on"
 
 tags = ["Rigging", "Animation"]
