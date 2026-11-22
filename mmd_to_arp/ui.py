@@ -4,7 +4,7 @@ import textwrap
 import bpy
 
 from . import ikfk, quickrig
-from .operators import find_mmd_armature, find_rig, is_arp_rig, motion_action
+from .operators import find_mmd_armature, find_rig, is_arp_rig, motion_action, root_motion
 
 
 def _wrapped(layout, text, icon='NONE', width=42):
@@ -33,6 +33,15 @@ class MMDARP_PT_main(bpy.types.Panel):
             col.scale_y = 0.8
             col.label(text='%s %s: untested' % (name, installed), icon='INFO')
             col.label(text='(tested with %s)' % tested, icon='BLANK1')
+
+        job = root_motion['job']
+        if job is not None:
+            box = layout.box()
+            box.label(text='Correcting the root motion', icon='TIME')
+            box.progress(factor=job.index / max(job.total, 1),
+                         text='Frame %d / %d' % (job.index, job.total))
+            box.operator('mmd_to_arp.stop_root_motion', icon='CANCEL')
+            return
 
         settings = context.scene.mmd_to_arp
         arm = find_mmd_armature(context.active_object)
