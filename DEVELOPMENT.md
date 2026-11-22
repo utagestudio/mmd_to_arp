@@ -38,7 +38,13 @@ BLENDER=/path/to/blender tools/build_extension.sh
 
 ## 紹介サイト
 
-- `site/public/` の静的ファイルを、Cloudflare Workers（静的アセットのみ、Worker のスクリプトなし）で配信します。設定は `site/wrangler.jsonc` です。
+- `site/public/` の静的ファイルを、Cloudflare Workers で配信します。設定は `site/wrangler.jsonc` です。
+- Worker のスクリプト（`site/src/worker.js`）は、HTML のページにだけ Google Tag Manager のコードを差し込みます。
+  - Cloudflare のダッシュボードで、Worker の Settings → Variables and Secrets に、テキストの変数 `GTM_ID`（例：`GTM-XXXXXXX`）を設定したときだけ差し込みます。
+  - 設定していないとき、または `GTM-` で始まる形式でないときは、ページをそのまま返します。
+  - `*.workers.dev` のアドレスでは、変数があっても差し込みません。main 以外のブランチのプレビュー URL は本番と変数が共通なので、ここで除外しています。
+  - `keep_vars` を有効にしているので、デプロイしても変数は消えません。
+  - `assets/` と `repository/` のファイルは Worker を通さず、そのまま配信します。
 - デプロイは Cloudflare の Workers Builds で、GitHub への push 時に自動で行います。
   - Root directory：`site`
   - Build watch paths（include）：`site/**`。`site/` の外だけを変えた push ではデプロイされません。`site/*` では 1 階層下までしか対象にならず、`site/public/` 以下の変更でデプロイされません。
@@ -46,6 +52,7 @@ BLENDER=/path/to/blender tools/build_extension.sh
 - ページは英語（`index.html`）と日本語（`ja/index.html`）の 2 つです。内容を変えるときは両方を直します。
 - 最新のバージョンとダウンロードのリンクは、ページの JavaScript（`assets/site.js`）が `repository/index.json` を読んで表示します。リリースのたびに HTML を書き換える必要はありません。
 - 手元で確認するとき：`python3 -m http.server -d site/public 8765` を実行し、`http://127.0.0.1:8765/` を開きます（`_headers` は反映されません）。
+- Worker も含めて確認するとき：`site/` で `npx wrangler dev` を実行します。GTM の差し込みを試すときは `--var GTM_ID:GTM-XXXXXXX` を付けます。
 
 ## プリセットの生成
 
