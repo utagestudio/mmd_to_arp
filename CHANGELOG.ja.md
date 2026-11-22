@@ -5,6 +5,11 @@
 MMD to Auto-Rig Pro の主な変更点です。
 バージョンの形式は `<major>.<minor>.<fix>` です。
 
+## [0.5.2] - 2026-11-22
+
+### 修正
+- IK / FK パネル：モーションを焼き込んだリグで、IK に切り替えてから FK に戻すと、パネルの表示は FK なのに IK のまま動く問題を修正しました（自動キー挿入が OFF のとき）。
+
 ## [0.5.1] - 2026-11-22
 
 ### 変更
@@ -65,6 +70,7 @@ MMD to Auto-Rig Pro の主な変更点です。
 - Preserve の修正：付与や IK で動く補助ボーンを、MMD の仕組みで動くように戻します。
 - アドオンを使わずに使える、Quick Rig のプリセットファイル。
 
+[0.5.2]: https://github.com/utagestudio/mmd_to_arp/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/utagestudio/mmd_to_arp/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.3.0...v0.4.0
