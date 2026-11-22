@@ -123,7 +123,7 @@ li + li { margin-top: .35em; }
 .notice { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: start; background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: var(--radius-s); padding: 14px 18px; font-size: .95rem; }
 .notice svg { width: 24px; height: 24px; color: var(--accent-2); margin-top: 2px; }
 .notice b { color: var(--text); }
-.notice p + p { margin-top: 4px; }
+.notice p + p { margin-top: 10px; }
 
 /* ---------- hero image ---------- */
 .shot { margin: 0; display: grid; gap: 10px; }
