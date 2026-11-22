@@ -5,10 +5,11 @@
 MMD to Auto-Rig Pro の主な変更点です。
 バージョンの形式は `<major>.<minor>.<fix>` です。
 
-## 未リリース
+## [0.5.1] - 2026-11-22
 
 ### 変更
 - Convert で、付与親が Auto-Rig Pro のボーンに置き換わる主要なボーン（脚、腕、背骨など）である付与も、代わりのボーンを使って復元するようにしました。脚がこのような補助ボーンだけで変形するモデルも、正しく動くようになりました。捩じりボーンを付与親とする付与は、引き続き復元しません。
+- 拡張機能の Web サイトのリンク（Blender の設定画面）を、https://mmd-to-arp.utage.studio/ に変えました。
 - 独自の補助ボーンの仕組みを持つモデルへの注意を、「リグは mmd_tools の動きを再現するので、MMD とは変形が異なる場合がある」という内容に改めました。
 
 ### 修正
@@ -64,6 +65,7 @@ MMD to Auto-Rig Pro の主な変更点です。
 - Preserve の修正：付与や IK で動く補助ボーンを、MMD の仕組みで動くように戻します。
 - アドオンを使わずに使える、Quick Rig のプリセットファイル。
 
+[0.5.1]: https://github.com/utagestudio/mmd_to_arp/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.2.0...v0.3.0

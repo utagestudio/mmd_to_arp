@@ -5,10 +5,11 @@ English | [日本語](CHANGELOG.ja.md)
 All notable changes to MMD to Auto-Rig Pro are listed here.
 The version format is `<major>.<minor>.<fix>`.
 
-## Unreleased
+## [0.5.1] - 2026-11-22
 
 ### Changed
 - Convert restores append whose parent is a main bone replaced by an Auto-Rig Pro bone (legs, arms, spine...), through proxy bones. Models whose legs deform only through such helper bones now move correctly. Append from twist bones is still not restored.
+- The website link of the extension (in Blender's preferences) now points to https://mmd-to-arp.utage.studio/.
 - The note for models with their own helper-bone systems now says that the rig follows mmd_tools and may deform differently from MMD.
 
 ### Fixed
@@ -64,6 +65,7 @@ The version format is `<major>.<minor>.<fix>`.
 - Preserve post-fix: hands helper bones driven by append or IK back to MMD.
 - Quick Rig preset files that can be used without the add-on.
 
+[0.5.1]: https://github.com/utagestudio/mmd_to_arp/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/utagestudio/mmd_to_arp/compare/v0.2.0...v0.3.0
