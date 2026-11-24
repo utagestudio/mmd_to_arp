@@ -1,6 +1,6 @@
 # MMD to Auto-Rig Pro
 
-[English](README.md) | 日本語 | サイト：https://mmd-to-arp.utage.studio/ja/
+[English](README.md) | 日本語 | サイト：https://mmd-to-arp.utage.studio/ja/ | 制作：[UTAGE.STUDIO](https://utage.studio/)
 
 MMD モデルを Auto-Rig Pro のリグに変換する Blender アドオンです。
 
