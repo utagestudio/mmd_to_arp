@@ -49,6 +49,7 @@ BLENDER=/path/to/blender tools/build_extension.sh
   - Root directory：`site`
   - Build watch paths（include）：`site/**`。`site/` の外だけを変えた push ではデプロイされません。`site/*` では 1 階層下までしか対象にならず、`site/public/` 以下の変更でデプロイされません。
   - Deploy command：`npx wrangler deploy`（既定値）。ビルドの手順はありません。
+  - main 以外のブランチでは `npx wrangler preview` でプレビューを作ります。このコマンドは `wrangler.jsonc` に `previews` ブロックが必要です（空でかまいません）。消すと、main 以外のブランチのビルドが失敗します。
 - ページは英語（`index.html`）と日本語（`ja/index.html`）の 2 つです。内容を変えるときは両方を直します。
 - 最新のバージョンとダウンロードのリンクは、ページの JavaScript（`assets/site.js`）が `repository/index.json` を読んで表示します。リリースのたびに HTML を書き換える必要はありません。
 - 手元で確認するとき：`python3 -m http.server -d site/public 8765` を実行し、`http://127.0.0.1:8765/` を開きます（`_headers` は反映されません）。
