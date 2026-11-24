@@ -1,10 +1,10 @@
 schema_version = "1.0.0"
 
 id = "mmd_to_arp"
-version = "0.5.2"
+version = "0.5.3-dev.1"
 name = "MMD to Auto-Rig Pro"
 tagline = "Rig MMD models with Auto-Rig Pro through Quick Rig"
-maintainer = "utagestudio"
+maintainer = "UTAGE.STUDIO"
 website = "https://mmd-to-arp.utage.studio/"
 type = "add-on"
 
@@ -16,5 +16,5 @@ license = [
   "SPDX:GPL-3.0-or-later",
 ]
 copyright = [
-  "2026 utagestudio",
+  "2026 UTAGE.STUDIO",
 ]
