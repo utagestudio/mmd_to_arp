@@ -1,6 +1,6 @@
 # MMD to Auto-Rig Pro
 
-English | [日本語](README.ja.md) | Website: https://mmd-to-arp.utage.studio/
+English | [日本語](README.ja.md) | Website: https://mmd-to-arp.utage.studio/ | Developed by [UTAGE.STUDIO](https://utage.studio/)
 
 A Blender add-on that converts MMD models into Auto-Rig Pro rigs.
 

@@ -17,5 +17,8 @@
   },
   "routes": [
     { "pattern": "mmd-to-arp.utage.studio", "custom_domain": true }
-  ]
+  ],
+  // Workers Builds runs `npx wrangler preview` for the other branches, which needs this
+  // block (it can stay empty: the settings above are shared).
+  "previews": {}
 }
